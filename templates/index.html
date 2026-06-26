@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}TopLanchesBG | Pedido Online{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <p class="eyebrow">Fast food profissional</p>
+        <h1>Sabores autênticos. Pedidos 100% online.</h1>
+        <p>Peça hambúrguer, combos e bebidas com painel administrativo, cliente e entregador integrados.</p>
+        <div class="hero-actions">
+            <a class="primary-btn" href="{{ url_for('cart') }}">Ver Carrinho</a>
+            <a class="ghost-btn" href="{{ url_for('login') }}">Área de Login</a>
+        </div>
+    </div>
+    <div class="hero-image">
+        <img src="/static/img/burger.png" alt="Hambúrguer TopLanches" />
+    </div>
+</section>
+
+<section class="feature-cards" id="cardapio">
+    <article>
+        <span class="iconify" data-icon="mdi:food-fork-drink"></span>
+        <h3>Catálogo completo</h3>
+        <p>Gerencie produtos, combos, categorias e estoque em tempo real.</p>
+    </article>
+    <article>
+        <span class="iconify" data-icon="mdi:shopping-cart"></span>
+        <h3>Carrinho inteligente</h3>
+        <p>Selecione entregas, cupons, pagamento e finalize pedido com segurança.</p>
+    </article>
+    <article>
+        <span class="iconify" data-icon="mdi:truck-fast"></span>
+        <h3>Entrega conectada</h3>
+        <p>Painel do entregador e atualizações em tempo real com WebSocket.</p>
+    </article>
+</section>
+
+<section class="catalog" id="menu">
+    <div class="section-head">
+        <h2>Cardápio em Destaque</h2>
+        <p>Escolha entre produtos, combos e promoções selecionadas.</p>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+</section>
+
+<section class="promotions" id="promocoes">
+    <div class="section-head">
+        <h2>Promoções ativas</h2>
+        <p>Economize com descontos automáticos, cupons e banners promocionais.</p>
+    </div>
+    <div class="promotion-grid" id="promoGrid"></div>
+</section>
+
+<section class="info-block" id="contato">
+    <div>
+        <h2>Pronto para produzir?</h2>
+        <p>O sistema já está preparado para se conectar ao MySQL, painel web e comunicação em tempo real.</p>
+    </div>
+    <a class="primary-btn" href="{{ url_for('login') }}">Ver Painel</a>
+</section>
+{% endblock %}

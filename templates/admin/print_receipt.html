@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Nota Loja #{{ pedido.numero_pedido or pedido.id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; }
+        h1 { margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        td, th { border: 1px solid #ddd; padding: 8px; }
+    </style>
+</head>
+<body onload="window.print()">
+    <h1>Comprovante da Loja / PDV</h1>
+    <p><strong>Pedido:</strong> #{{ pedido.numero_pedido or pedido.id }}</p>
+    <p><strong>Data:</strong> {{ pedido.data.strftime('%d/%m/%Y %H:%M') }}</p>
+    <p><strong>Cliente:</strong> {{ pedido.nome }}</p>
+    <table>
+        <thead><tr><th>Item</th><th>Qtd</th><th>Total</th></tr></thead>
+        <tbody>
+        {% for item in pedido.itens %}
+            <tr>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>R$ {{ '%.2f'|format(item.valor) }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p><strong>Subtotal:</strong> R$ {{ '%.2f'|format(pedido.subtotal) }}</p>
+    <p><strong>Desconto:</strong> R$ {{ '%.2f'|format(pedido.desconto) }}</p>
+    <p><strong>Taxa:</strong> R$ {{ '%.2f'|format(pedido.taxa_entrega) }}</p>
+    <p><strong>Total Final:</strong> R$ {{ '%.2f'|format(pedido.valor_total) }}</p>
+</body>
+</html>

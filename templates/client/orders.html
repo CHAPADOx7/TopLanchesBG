@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Meus Pedidos | TopLanchesBG{% endblock %}
+{% block content %}
+<section class="orders-shell">
+    <div class="section-head"><h2>Meus Pedidos</h2><p>Veja o histórico e acompanhe o status em tempo real.</p></div>
+    <div class="dashboard-panel" style="margin-bottom: 1rem;">
+        <strong>Pedidos em andamento</strong>
+        <p>Pedidos ativos desaparecem desta área quando o delivery é fechado e ficam apenas no histórico.</p>
+    </div>
+    <div class="orders-grid" style="margin-bottom: 2rem;">
+        {% for pedido in pedidos_ativos %}
+        <article class="order-card">
+            <div class="order-top">
+                <span>Pedido #{{ pedido.numero_pedido or pedido.id }}</span>
+                <span class="status-chip {{ pedido.status|lower|replace(' ', '-') }}">{{ pedido.status }}</span>
+            </div>
+            <p><strong>Valor:</strong> R$ {{ '%.2f'|format(pedido.valor_total) }}</p>
+            <p><strong>Entrega:</strong> {{ pedido.bairro }}</p>
+            <p><strong>Pagamento:</strong> {{ pedido.forma_pagamento }}</p>
+            <p><strong>Data:</strong> {{ pedido.data.strftime('%d/%m/%Y %H:%M') }}</p>
+            <details>
+                <summary>Ver itens</summary>
+                <ul>
+                    {% for item in pedido.itens %}
+                    <li>{{ item.quantidade }}× {{ item.nome }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+        </article>
+        {% else %}
+        <p>Nenhum pedido ativo no momento.</p>
+        {% endfor %}
+    </div>
+
+    <div class="section-head"><h2>Historico</h2><p>Pedidos finalizados, entregues ou arquivados no fechamento do delivery.</p></div>
+    <div class="orders-grid">
+        {% for pedido in historico %}
+        <article class="order-card">
+            <div class="order-top">
+                <span>Pedido #{{ pedido.numero_pedido or pedido.id }}</span>
+                <span class="status-chip {{ pedido.status|lower|replace(' ', '-') }}">{{ pedido.status }}</span>
+            </div>
+            <p><strong>Valor:</strong> R$ {{ '%.2f'|format(pedido.valor_total) }}</p>
+            <p><strong>Entrega:</strong> {{ pedido.bairro }}</p>
+            <p><strong>Pagamento:</strong> {{ pedido.forma_pagamento }}</p>
+            <p><strong>Data:</strong> {{ pedido.data.strftime('%d/%m/%Y %H:%M') }}</p>
+            <details>
+                <summary>Ver itens</summary>
+                <ul>
+                    {% for item in pedido.itens %}
+                    <li>{{ item.quantidade }}× {{ item.nome }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+        </article>
+        {% else %}
+        <p>Você ainda não possui pedidos no historico.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

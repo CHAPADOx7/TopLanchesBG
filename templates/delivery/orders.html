@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Painel de Entregador | TopLanchesBG{% endblock %}
+{% block content %}
+<section class="orders-shell">
+    <div class="section-head"><h2>Painel do Entregador</h2><p>Rotas, status e historico de entregas.</p></div>
+    <div class="dashboard-panel" style="margin-bottom: 16px;">
+        <p><strong>Total taxa por entrega (historico):</strong> R$ {{ '%.2f'|format(taxa_total) }}</p>
+        <p><strong>Pedidos ativos:</strong> {{ pedidos|length }}</p>
+        <p><strong>Entregas concluidas:</strong> {{ historico|length }}</p>
+    </div>
+    <div class="orders-grid">
+        {% for pedido in pedidos %}
+        {% set can_mark_out = pedido.status == 'Em Preparo' %}
+        {% set can_mark_delivered = pedido.status == 'Saiu para Entrega' %}
+        <article class="order-card">
+            <div class="order-top">
+                <span>Pedido #{{ pedido.numero_pedido or pedido.id }}</span>
+                <span class="status-chip {{ pedido.status|lower|replace(' ', '-') }}">{{ pedido.status }}</span>
+            </div>
+            <p><strong>Cliente:</strong> {{ pedido.nome }}</p>
+            <p><strong>Telefone:</strong> {{ pedido.telefone }}</p>
+            <p><strong>Endereço:</strong> {{ pedido.endereco }}, {{ pedido.bairro }}</p>
+            <p><strong>Taxa de entrega:</strong> R$ {{ '%.2f'|format(pedido.taxa_entrega) }}</p>
+            <p><a class="secondary-btn" href="https://www.google.com/maps/search/?api=1&query={{ (pedido.endereco ~ ', ' ~ pedido.bairro ~ ', Sao Pedro da Aldeia, RJ')|urlencode }}" target="_blank">Abrir rota no mapa</a></p>
+            <details>
+                <summary>Ver itens</summary>
+                <ul>
+                    {% for item in pedido.itens %}
+                    <li>{{ item.quantidade }}× {{ item.nome }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            <div class="order-actions">
+                <button class="secondary-btn" {% if not can_mark_out %}disabled{% endif %} onclick="changeStatus({{ pedido.id }}, 'Saiu para Entrega')">Saiu para Entrega</button>
+                <button class="primary-btn" {% if not can_mark_delivered %}disabled{% endif %} onclick="changeStatus({{ pedido.id }}, 'Entregue')">Entregue</button>
+            </div>
+        </article>
+        {% else %}
+        <p>Nenhum pedido atribuído a você.</p>
+        {% endfor %}
+    </div>
+
+    <div class="table-panel" style="margin-top: 20px;">
+        <h3>Historico de entregas</h3>
+        <table>
+            <thead>
+                <tr><th>Comanda</th><th>Cliente</th><th>Endereco</th><th>Taxa</th><th>Data</th></tr>
+            </thead>
+            <tbody>
+                {% for pedido in historico %}
+                <tr>
+                    <td>#{{ pedido.numero_pedido or pedido.id }}</td>
+                    <td>{{ pedido.nome }}</td>
+                    <td>{{ pedido.endereco }}, {{ pedido.bairro }}</td>
+                    <td>R$ {{ '%.2f'|format(pedido.taxa_entrega) }}</td>
+                    <td>{{ pedido.data.strftime('%d/%m/%Y %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Nenhuma entrega concluida ainda.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% block scripts %}
+<script>
+function changeStatus(id, status) {
+    fetch('/api/delivery/order/' + id + '/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+    }).then(async (response) => {
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            alert(data.error || 'Não foi possível alterar este status.');
+            return;
+        }
+        window.location.reload();
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

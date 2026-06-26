@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Comanda Moto-boy #{{ pedido.numero_pedido or pedido.id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; }
+        h1, h2 { margin: 0 0 8px; }
+        .section { margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body onload="window.print()">
+    <h1>Comanda Moto-boy</h1>
+    <h2>Pedido #{{ pedido.numero_pedido or pedido.id }}</h2>
+    <div class="section">
+        <p><strong>Cliente:</strong> {{ pedido.nome }}</p>
+        <p><strong>Telefone:</strong> {{ pedido.telefone }}</p>
+        <p><strong>Endereco:</strong> {{ pedido.endereco }}, {{ pedido.bairro }}</p>
+    </div>
+    <div class="section">
+        <table>
+            <thead><tr><th>Item</th><th>Qtd</th><th>Valor</th></tr></thead>
+            <tbody>
+            {% for item in pedido.itens %}
+                <tr>
+                    <td>{{ item.nome }}</td>
+                    <td>{{ item.quantidade }}</td>
+                    <td>R$ {{ '%.2f'|format(item.valor) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="section">
+        <p><strong>Subtotal:</strong> R$ {{ '%.2f'|format(pedido.subtotal) }}</p>
+        <p><strong>Taxa de entrega:</strong> R$ {{ '%.2f'|format(pedido.taxa_entrega) }}</p>
+        <p><strong>Total:</strong> R$ {{ '%.2f'|format(pedido.valor_total) }}</p>
+        <p><strong>Pagamento:</strong> {{ pedido.forma_pagamento }}</p>
+    </div>
+</body>
+</html>

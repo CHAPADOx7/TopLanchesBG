@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Impressoras | Admin Top LanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Gerenciamento de Impressoras</h2>
+            <p>Configure a impressora da cozinha e a impressora geral em uma tela separada.</p>
+        </div>
+        <a class="secondary-btn" href="{{ url_for('admin_config') }}">Voltar às configurações</a>
+    </div>
+    <div class="form-panel">
+        <form method="POST" action="{{ url_for('admin_printers') }}" id="printerForm">
+            <label><input type="checkbox" name="kitchen_printer_enabled" {% if kitchen_printer_enabled %}checked{% endif %}> Impressora da cozinha ativa</label>
+            <label>Nome da impressora da cozinha</label>
+            <input type="text" name="kitchen_printer_name" value="{{ kitchen_printer_name or '' }}" placeholder="Ex: EPSON-TM-T20 Cozinha" data-printer-field />
+            <label><input type="checkbox" name="general_printer_enabled" {% if general_printer_enabled %}checked{% endif %}> Impressora geral ativa (NF e moto-boy)</label>
+            <label>Nome da impressora geral</label>
+            <input type="text" name="general_printer_name" value="{{ general_printer_name or '' }}" placeholder="Ex: EPSON-TM-T20 Caixa" data-printer-field />
+            <label><input type="checkbox" name="printer_auto_search" {% if printer_auto_search %}checked{% endif %}> Usar busca automática/sugestões</label>
+            <div class="printer-actions">
+                <button class="primary-btn" type="submit">Salvar impressoras</button>
+                <button class="secondary-btn" type="button" id="autoSearchPrinterBtn">Buscar automaticamente</button>
+            </div>
+            <p class="printer-note">O navegador não expõe a lista completa de impressoras do sistema, então o botão usa sugestões automáticas e o último nome salvo para agilizar a configuração.</p>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+  const button = document.getElementById('autoSearchPrinterBtn');
+  const fields = Array.from(document.querySelectorAll('[data-printer-field]'));
+  if (!button || fields.length === 0) return;
+  const suggestions = ['EPSON-TM-T20', 'EPSON TM-T20', 'Bematech', 'Elgin', 'Daruma', 'TSP100', 'Zebra'];
+  button.addEventListener('click', () => {
+    const saved = localStorage.getItem('toplanches_last_printer') || '';
+    const candidate = saved || suggestions.find(Boolean) || '';
+    fields.forEach(field => {
+      if (!field.value && candidate) {
+        field.value = candidate;
+      }
+    });
+    if (candidate) {
+      Toastify({ text: 'Sugestão de impressora aplicada.', duration: 2500, close: true, gravity: 'bottom', position: 'right', style: { background: '#D2740C', color: '#FFF5E8' } }).showToast();
+    }
+  });
+  const form = document.getElementById('printerForm');
+  if (form) {
+    form.addEventListener('submit', () => {
+      const firstFilled = fields.find(field => field.value.trim());
+      if (firstFilled) {
+        localStorage.setItem('toplanches_last_printer', firstFilled.value.trim());
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

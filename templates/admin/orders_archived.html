@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Pedidos Arquivados | Admin TopLanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Pedidos Arquivados</h2>
+            <p>Pedidos removidos do gerenciador ativo no fechamento do delivery, separados por data.</p>
+        </div>
+        <div class="order-actions">
+            <a class="secondary-btn" href="{{ url_for('admin_orders') }}">Voltar ao gerenciador</a>
+            <a class="secondary-btn" href="{{ url_for('admin_help') }}">Help</a>
+        </div>
+    </div>
+
+    {% for data_ref, pedidos in grupos_por_data %}
+    <div class="table-panel" style="margin-bottom: 1.5rem;">
+        <h3>Data: {{ data_ref }}</h3>
+        <table>
+            <thead>
+                <tr><th>Pedido</th><th>Cliente</th><th>Status</th><th>Total</th><th>Horário</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td>#{{ pedido.numero_pedido or pedido.id }}</td>
+                    <td>{{ pedido.nome }}</td>
+                    <td>{{ pedido.status }}</td>
+                    <td>R$ {{ '%.2f'|format(pedido.valor_total) }}</td>
+                    <td>{{ pedido.data.strftime('%H:%M') }}</td>
+                    <td class="table-actions">
+                        <a class="secondary-btn" href="{{ url_for('print_kitchen_ticket', pedido_id=pedido.id) }}" target="_blank">Comanda Cozinha</a>
+                        <a class="secondary-btn" href="{{ url_for('print_delivery_ticket', pedido_id=pedido.id) }}" target="_blank">Comanda Moto-boy</a>
+                        <a class="secondary-btn" href="{{ url_for('print_store_receipt', pedido_id=pedido.id) }}" target="_blank">Nota / PDV</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="dashboard-panel">
+        <p>Nenhum pedido arquivado até o momento.</p>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

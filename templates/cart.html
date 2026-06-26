@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Carrinho | TopLanchesBG{% endblock %}
+{% block content %}
+<section class="cart-shell">
+    <div class="cart-left">
+        <h2>Meu Carrinho</h2>
+        <div id="cartItems" class="cart-items"></div>
+    </div>
+    <aside class="cart-summary">
+        <h2>Resumo</h2>
+        <p><strong>Tempo estimado:</strong> <span id="waitTimeDisplay">Carregando...</span></p>
+        <div class="summary-row"><span>Subtotal</span><span id="subtotalValue">R$ 0,00</span></div>
+        <div class="summary-row"><span>Delivery</span><span id="deliveryValue">R$ 0,00</span></div>
+        <div class="summary-row"><span>Desconto</span><span id="discountValue">R$ 0,00</span></div>
+        <div class="summary-row total"><span>Total</span><span id="totalValue">R$ 0,00</span></div>
+        <div class="divider"></div>
+        <label>Cupom</label>
+        <input id="couponInput" placeholder="Digite o código" />
+        <button id="applyCoupon" class="secondary-btn">Aplicar Cupom</button>
+        <div class="divider"></div>
+        <h3>Dados de entrega</h3>
+        <div id="identityFields">
+            <input id="nameField" placeholder="Nome" />
+            <input id="phoneField" placeholder="Telefone" />
+        </div>
+        <small id="identityHint" style="display:none;">Usando os dados da sua conta para nome e telefone.</small>
+        <input id="addressField" placeholder="Endereço" />
+        <input id="neighborhoodField" placeholder="Bairro" />
+        <textarea id="noteField" placeholder="Observação opcional"></textarea>
+        <label>Pagamento</label>
+        <select id="paymentField">
+            <option>Dinheiro</option>
+            <option>PIX</option>
+            <option>Cartão de Crédito</option>
+            <option>Cartão de Débito</option>
+        </select>
+        <button id="submitOrder" class="primary-btn">Finalizar Pedido</button>
+    </aside>
+</section>
+{% endblock %}

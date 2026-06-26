@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Login | Top LanchesBG{% endblock %}
+{% block content %}
+<section class="hero auth-shell">
+    <div class="hero-copy">
+        <p class="eyebrow">Top LanchesBG</p>
+        <h1>Cada pedido nasce no <span>fogo certo</span> e chega inesquecível.</h1>
+        <p>Da chapa ao clique final, sua operação roda com ritmo de hamburgueria raiz: rápida, quente e sem perder sabor.</p>
+        <div class="hero-actions">
+            <a class="secondary-btn" href="{{ url_for('register') }}">Criar conta</a>
+            <a class="ghost-btn" href="{{ url_for('index') }}">Voltar ao início</a>
+        </div>
+    </div>
+    <div class="auth-card">
+        <h2>Entrar</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+            <label>Usuário / E-mail / Telefone</label>
+            <input type="text" name="usuario" required placeholder="Digite seu acesso" />
+            <label>Senha</label>
+            <input type="password" name="senha" required placeholder="Sua senha segura" />
+            <button class="primary-btn" type="submit">Entrar</button>
+            <small><a href="{{ url_for('register') }}">Ainda não tenho cadastro</a></small>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatorio de NFs do Dia</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+    </style>
+</head>
+<body onload="window.print()">
+    <h1>Notas do Dia</h1>
+    <table>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Forma</th><th>Total</th><th>Data</th></tr></thead>
+        <tbody>
+        {% for pedido in pedidos %}
+            <tr>
+                <td>#{{ pedido.numero_pedido or pedido.id }}</td>
+                <td>{{ pedido.nome }}</td>
+                <td>{{ pedido.forma_pagamento }}</td>
+                <td>R$ {{ '%.2f'|format(pedido.valor_total) }}</td>
+                <td>{{ pedido.data.strftime('%d/%m/%Y %H:%M') }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5">Nenhum pedido hoje.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Taxas de Entrega | Admin TopLanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Taxas de entrega</h2>
+            <p>Defina valores por bairro e controle se a entrega está ativa.</p>
+        </div>
+    </div>
+    <div class="table-panel">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Bairro</th><th>Valor</th><th>Ativo</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                {% for taxa in taxas %}
+                <tr>
+                    <td>{{ taxa.id }}</td>
+                    <td>{{ taxa.bairro }}</td>
+                    <td>R$ {{ '%.2f'|format(taxa.valor) }}</td>
+                    <td>{{ 'Sim' if taxa.ativo else 'Não' }}</td>
+                    <td class="table-actions">
+                        <form method="POST" action="{{ url_for('admin_tax_toggle', taxa_id=taxa.id) }}" style="display:inline;">
+                            <button class="secondary-btn" type="submit">{{ 'Desativar' if taxa.ativo else 'Ativar' }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin_tax_delete', taxa_id=taxa.id) }}" style="display:inline;" onsubmit="return confirm('Excluir taxa?');">
+                            <button class="ghost-btn" type="submit">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="form-panel">
+        <h3>Nova taxa de entrega</h3>
+        <form method="POST" action="{{ url_for('admin_tax_new') }}">
+            <label>Tipo de taxa</label>
+            <select name="tipo_taxa" id="tipoTaxa" onchange="toggleTaxMode()">
+                <option value="bairro" selected>Por bairro</option>
+                <option value="global">Taxa unica para todas as entregas</option>
+            </select>
+            <label>Bairro</label>
+            <input type="text" name="bairro" id="bairroTaxa" required />
+            <label>Valor</label>
+            <input type="number" step="0.01" name="valor" required />
+            <label><input type="checkbox" name="ativo" checked> Ativo</label>
+            <button class="primary-btn" type="submit">Salvar taxa</button>
+        </form>
+        <p style="margin-top: 12px;">Taxa global atual: <strong>R$ {{ '%.2f'|format(config_obj.taxa_fixa if config_obj else 0) }}</strong></p>
+    </div>
+</section>
+{% block scripts %}
+<script>
+function toggleTaxMode() {
+    var mode = document.getElementById('tipoTaxa').value;
+    var bairro = document.getElementById('bairroTaxa');
+    if (mode === 'global') {
+        bairro.value = '';
+        bairro.required = false;
+        bairro.disabled = true;
+    } else {
+        bairro.disabled = false;
+        bairro.required = true;
+    }
+}
+toggleTaxMode();
+</script>
+{% endblock %}
+{% endblock %}

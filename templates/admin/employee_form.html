@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if entregador else 'Novo' }} Funcionário | Admin TopLanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>{{ 'Editar' if entregador else 'Novo' }} funcionário</h2>
+            <p>Adicione ou atualize um entregador.</p>
+        </div>
+        <a class="secondary-btn" href="{{ url_for('admin_employees') }}">Voltar para lista</a>
+    </div>
+    <div class="form-panel">
+        <form method="POST" action="">
+            <label>Nome</label>
+            <input type="text" name="nome" value="{{ entregador.nome if entregador else '' }}" required />
+            <label>Telefone</label>
+            <input type="text" name="telefone" value="{{ entregador.telefone if entregador else '' }}" />
+            <label>Usuário</label>
+            <input type="text" name="usuario" value="{{ entregador.usuario if entregador else '' }}" required />
+            <label>Senha</label>
+            <input type="password" name="senha" placeholder="Digite uma senha" {% if not entregador %}required{% endif %} />
+            <label><input type="checkbox" name="ativo" {% if entregador and entregador.ativo %}checked{% endif %} {% if not entregador %}checked{% endif %}> Ativo</label>
+            <button class="primary-btn" type="submit">Salvar</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

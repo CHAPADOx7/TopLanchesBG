@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Produtos | Admin TopLanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Produtos</h2>
+            <p>Gerencie o catálogo de produtos e estoque.</p>
+        </div>
+        <a class="primary-btn" href="{{ url_for('admin_product_new') }}">Novo produto</a>
+    </div>
+    <div class="form-panel" style="margin-bottom:16px;">
+        <form method="GET" action="{{ url_for('admin_products') }}">
+            <label>Filtrar por categoria</label>
+            <select name="categoria" onchange="this.form.submit()">
+                <option value="" {% if not categoria_atual %}selected{% endif %}>Todas</option>
+                {% for key, label in categorias %}
+                <option value="{{ key }}" {% if categoria_atual == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="table-panel">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Ativo</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                {% for produto in produtos %}
+                <tr>
+                    <td>{{ produto.id }}</td>
+                    <td>{{ produto.nome }}</td>
+                    <td>{{ produto.categoria|capitalize }}</td>
+                    <td>R$ {{ '%.2f'|format(produto.preco) }}</td>
+                    <td>{{ produto.estoque }}</td>
+                    <td>{{ 'Sim' if produto.ativo else 'Não' }}</td>
+                    <td class="table-actions">
+                        <a class="secondary-btn" href="{{ url_for('admin_product_edit', product_id=produto.id) }}">Editar</a>
+                        <form method="POST" action="{{ url_for('admin_product_toggle', product_id=produto.id) }}" style="display:inline;">
+                            <button class="secondary-btn" type="submit">{{ 'Desativar' if produto.ativo else 'Ativar' }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin_product_delete', product_id=produto.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este produto?');">
+                            <button class="ghost-btn" type="submit">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7">Nenhum produto encontrado nesta categoria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-panel" style="margin-top: 20px;">
+        <h3>Historico de Alteracoes</h3>
+        <table>
+            <thead>
+                <tr><th>Produto</th><th>Campo</th><th>Valor antigo</th><th>Novo valor</th><th>Quem alterou</th><th>Quando</th></tr>
+            </thead>
+            <tbody>
+                {% for log in historico %}
+                <tr>
+                    <td>{{ log.item_nome }}</td>
+                    <td>{{ log.campo|capitalize }}</td>
+                    <td>{{ log.valor_antigo }}</td>
+                    <td>{{ log.valor_novo }}</td>
+                    <td>{{ log.alterado_por }}</td>
+                    <td>{{ log.alterado_em.strftime('%d/%m/%Y %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">Nenhuma alteracao registrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

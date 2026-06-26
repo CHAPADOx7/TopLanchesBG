@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Painel Administrativo | Top LanchesBG{% endblock %}
+{% block content %}
+<section class="dashboard-shell">
+    <div class="dashboard-header">
+        <div>
+            <h2>Dashboard</h2>
+            <p>Acompanhamento rápido do sistema e status dos pedidos.</p>
+            <p><strong>Status do delivery:</strong> {{ 'Aberto' if delivery_open else 'Fechado' }}</p>
+        </div>
+        {% if delivery_open %}
+        <div class="stats-grid">
+            <div class="stat-card"><h3>{{ pendentes }}</h3><p>Pedidos Pendentes</p></div>
+            <div class="stat-card"><h3>{{ aceitos }}</h3><p>Pedidos Aceitos</p></div>
+            <div class="stat-card"><h3>{{ recusados }}</h3><p>Pedidos Recusados</p></div>
+            <div class="stat-card"><h3>{{ entregues }}</h3><p>Pedidos Entregues</p></div>
+        </div>
+        {% endif %}
+    </div>
+    {% if delivery_open %}
+    <div class="dashboard-grid">
+        <section class="dashboard-panel">
+            <h3>Resumo de vendas</h3>
+            <p>Receita diária: R$ {{ '%.2f'|format(receita_diaria) }}</p>
+            <p>Receita mensal: R$ {{ '%.2f'|format(receita_mensal) }}</p>
+            <p>Produtos cadastrados: {{ produtos|length }}</p>
+            <p>Clientes cadastrados: {{ clientes|length }}</p>
+        </section>
+        <section class="dashboard-panel table-panel">
+            <h3>Pedidos recentes</h3>
+            <table>
+                <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Status</th><th>Data</th></tr></thead>
+                <tbody>
+                    {% for pedido in pedidos[:8] %}
+                    <tr>
+                        <td>{{ pedido.numero_pedido or pedido.id }}</td>
+                        <td>{{ pedido.nome }}</td>
+                        <td>R$ {{ '%.2f'|format(pedido.valor_total) }}</td>
+                        <td>{{ pedido.status }}</td>
+                        <td>{{ pedido.data.strftime('%d/%m %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+    {% else %}
+    <div class="dashboard-panel">
+        <h3>Delivery fechado</h3>
+        <p>Pedidos e indicadores do dia foram limpos. Use o botao abaixo para abrir o delivery novamente.</p>
+    </div>
+    {% endif %}
+    <div class="admin-quick-links">
+        {% if delivery_open %}
+        <a class="secondary-btn" href="{{ url_for('admin_orders') }}">Gerenciar Pedidos</a>
+        {% endif %}
+        <a class="secondary-btn" href="{{ url_for('admin_products') }}">Gerenciar Produtos</a>
+        <a class="secondary-btn" href="{{ url_for('admin_combos') }}">Gerenciar Combos</a>
+        <a class="secondary-btn" href="{{ url_for('admin_employees') }}">Gerenciar Funcionários</a>
+        <a class="secondary-btn" href="{{ url_for('admin_payments') }}">Formas de Pagamento</a>
+        <a class="secondary-btn" href="{{ url_for('admin_taxas') }}">Taxas de Entrega</a>
+        <a class="secondary-btn" href="{{ url_for('admin_printers') }}">Gerenciar Impressoras</a>
+        <a class="secondary-btn" href="{{ url_for('admin_config') }}">Horarios / Delivery</a>
+        <a class="primary-btn" href="{{ url_for('admin_config') }}#whatsapp-business">Gerenciador de WhatsApp</a>
+        <a class="secondary-btn" href="{{ url_for('admin_orders_archived') }}">Pedidos Arquivados</a>
+        <a class="secondary-btn" href="{{ url_for('admin_help') }}">Help do Sistema</a>
+        <a class="secondary-btn" href="{{ url_for('print_day_invoices') }}" target="_blank">Imprimir NFs do dia</a>
+        {% if delivery_open %}
+            <form method="POST" action="{{ url_for('admin_close_day') }}" style="display:inline;" onsubmit="return confirm('Fechar delivery e limpar pedidos?');">
+                <button class="ghost-btn" type="submit">Fechar Delivery</button>
+            </form>
+        {% else %}
+            <form method="POST" action="{{ url_for('admin_open_day') }}" style="display:inline;">
+                <button class="primary-btn" type="submit">Abrir Delivery</button>
+            </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

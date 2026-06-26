@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Help do Sistema | Admin TopLanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Help do Sistema</h2>
+            <p>Guia completo de operação: pedidos, status, fechamento de delivery, WhatsApp e relatórios.</p>
+        </div>
+        <div class="order-actions">
+            <a class="secondary-btn" href="{{ url_for('admin_dashboard') }}">Voltar ao dashboard</a>
+            <a class="primary-btn" href="{{ url_for('admin_config') }}#whatsapp-business">Ir para Gerenciador de WhatsApp</a>
+        </div>
+    </div>
+
+    <div class="table-panel" style="margin-bottom: 1.5rem;">
+        <h3>Fluxo dos botões de pedido</h3>
+        <p><strong>Aceitar e Preparar:</strong> habilitado apenas quando o pedido está em <strong>Pendente</strong>. Ao confirmar entregador, o status vai para <strong>Em Preparo</strong>.</p>
+        <p><strong>Automatizar comanda da cozinha:</strong> ao marcar essa opção no gerenciador, o sistema abre automaticamente a impressão da comanda de cozinha quando o pedido é aceito.</p>
+        <p><strong>Comanda Cozinha:</strong> abre a versão reduzida para bobina térmica (80mm), pronta para impressão.</p>
+        <p><strong>Saiu para Entrega:</strong> habilitado apenas quando o pedido está em <strong>Em Preparo</strong>.</p>
+        <p><strong>Entregue:</strong> habilitado apenas quando o pedido está em <strong>Saiu para Entrega</strong>.</p>
+        <p><strong>Após Entregue:</strong> os botões de transição ficam bloqueados, restando apenas impressão de documentos (NF/PDV e comanda).</p>
+        <p><strong>Comanda Moto-boy:</strong> abre o documento da entrega para impressão imediata.</p>
+        <p><strong>Nota / PDV:</strong> abre o comprovante da loja com resumo do pedido.</p>
+    </div>
+
+    <div class="table-panel" style="margin-bottom: 1.5rem;">
+        <h3>Fechamento de delivery</h3>
+        <p>Ao clicar em <strong>Fechar Delivery</strong>, todos os pedidos saem do gerenciador ativo e são movidos para <strong>Pedidos Arquivados</strong>.</p>
+        <p>No mesmo fechamento, o contador visual de pedidos é zerado. Ao abrir novamente o delivery, a contagem começa do início.</p>
+        <p>Para consultar pedidos antigos: <a href="{{ url_for('admin_orders_archived') }}">Pedidos Arquivados</a>.</p>
+    </div>
+
+    <div class="table-panel" style="margin-bottom: 1.5rem;" id="help-whatsapp">
+        <h3>WhatsApp automático (Business) - guia 100% prático</h3>
+        <p>Use este roteiro exatamente na ordem para habilitar mensagens automáticas de aceite, despacho e entrega.</p>
+
+        <h4>1) Pré-requisitos</h4>
+        <p>Tenha uma conta no Meta Business Manager e acesso de administrador ao negócio.</p>
+        <p>Tenha um número que possa ser usado no WhatsApp Business API (não pode estar ativo em WhatsApp comum no mesmo momento).</p>
+
+        <h4>2) Criar/abrir app no Meta for Developers</h4>
+        <p>Acesse <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener noreferrer">developers.facebook.com/apps</a>.</p>
+        <p>Clique em <strong>Create App</strong>, selecione tipo <strong>Business</strong> e finalize.</p>
+        <p>No menu do app, clique em <strong>Add Product</strong> e adicione <strong>WhatsApp</strong>.</p>
+
+        <h4>3) Pegar o Phone Number ID (onde exatamente)</h4>
+        <p>No painel do app da Meta: <strong>WhatsApp</strong> > <strong>API Setup</strong>.</p>
+        <p>Nessa tela, localize o campo <strong>Phone number ID</strong> e copie o valor numérico.</p>
+        <p>Esse valor deve ser colado no campo <strong>Phone Number ID</strong> do seu sistema.</p>
+
+        <h4>4) Gerar token (teste e produção)</h4>
+        <p><strong>Token temporário (rápido para teste):</strong> na mesma tela <strong>WhatsApp > API Setup</strong>, copie o <strong>Temporary access token</strong>.</p>
+        <p><strong>Token recomendado (produção):</strong> em <a href="https://business.facebook.com/settings" target="_blank" rel="noopener noreferrer">business.facebook.com/settings</a>, vá em <strong>Users > System Users</strong>, crie um usuário de sistema admin, atribua o app e gere token permanente com permissões do WhatsApp.</p>
+        <p>No sistema, cole esse token no campo <strong>Token de acesso</strong>.</p>
+
+        <h4>5) Preencher no sistema (tela correta)</h4>
+        <p>Abra <a href="{{ url_for('admin_config') }}#whatsapp-business">Gerenciador de WhatsApp</a>.</p>
+        <p>Preencha:</p>
+        <p><strong>Ativar mensagens automáticas:</strong> marcado.</p>
+        <p><strong>Token de acesso:</strong> token gerado na Meta.</p>
+        <p><strong>Phone Number ID:</strong> valor da etapa 3.</p>
+        <p><strong>Versão da API:</strong> mantenha <strong>v20.0</strong> (ou a versão estável atual da Meta).</p>
+        <p>Clique em <strong>Salvar configurações</strong>.</p>
+
+        <h4>6) Fazer teste real</h4>
+        <p>Crie um pedido de teste e no admin clique em <strong>Aceitar e Preparar</strong>.</p>
+        <p>Depois avance para <strong>Saiu para Entrega</strong> e <strong>Entregue</strong>.</p>
+        <p>O cliente deve receber as mensagens em cada etapa.</p>
+
+        <h4>7) Erros mais comuns e como resolver</h4>
+        <p><strong>Não chega mensagem:</strong> token expirado ou inválido. Gere novo token e salve novamente.</p>
+        <p><strong>Erro de permissão:</strong> confirme se o token foi gerado com permissões do WhatsApp para o app correto.</p>
+        <p><strong>Número errado:</strong> confirme se o Phone Number ID foi copiado da tela correta (WhatsApp > API Setup).</p>
+        <p><strong>Formato de telefone do cliente:</strong> o sistema normaliza para Brasil, mas verifique se o cadastro do cliente está correto.</p>
+
+        <h4>8) Checklist final (rápido)</h4>
+        <p>[ ] Produto WhatsApp adicionado no app da Meta.</p>
+        <p>[ ] Phone Number ID copiado de WhatsApp > API Setup.</p>
+        <p>[ ] Token válido colado no sistema.</p>
+        <p>[ ] Opção de automação marcada no Gerenciador de WhatsApp.</p>
+        <p>[ ] Pedido de teste enviado com sucesso em todas as etapas.</p>
+
+        <p>Referência oficial: <a href="https://developers.facebook.com/docs/whatsapp/cloud-api" target="_blank" rel="noopener noreferrer">WhatsApp Cloud API</a>.</p>
+    </div>
+
+    <div class="table-panel">
+        <h3>Atalhos rápidos</h3>
+        <p><a href="{{ url_for('admin_orders') }}">Gerenciar Pedidos</a> para operar pedidos ativos.</p>
+        <p><a href="{{ url_for('admin_orders_archived') }}">Pedidos Arquivados</a> para consultar pedidos separados por data.</p>
+        <p><a href="{{ url_for('admin_products') }}">Gerenciar Produtos</a> para catálogo e preços.</p>
+        <p><a href="{{ url_for('admin_payments') }}">Formas de Pagamento</a> para configurar meios de pagamento.</p>
+        <p><a href="{{ url_for('admin_taxas') }}">Taxas de Entrega</a> para bairros e taxa global.</p>
+    </div>
+</section>
+{% endblock %}

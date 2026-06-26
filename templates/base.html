@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/app.css" />
+    <title>{% block title %}Top LanchesBG{% endblock %}</title>
+</head>
+<body class="theme-{{ site_theme or 'normal' }}">
+    {% set hide_nav = false %}
+    {% set home_cardapio = url_for('index') ~ '#menu' %}
+    {% set home_promocoes = url_for('index') ~ '#promotions' %}
+    {% set home_contato = url_for('index') ~ '#service' %}
+    <header class="topbar">
+        <div class="brand">
+            <a href="{{ url_for('index') }}">
+                <img src="/static/img/logo.svg" alt="TopLanchesBG" class="brand-logo" />
+                <span>Top LanchesBG</span>
+            </a>
+        </div>
+        {% if not hide_nav %}
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}">Início</a>
+            <a href="{{ home_cardapio }}">Cardápio</a>
+            <a href="{{ home_promocoes }}">Promoções</a>
+            <a href="{{ home_contato }}">Contato</a>
+            {% if current_role == 'client' %}
+                <a href="{{ url_for('client_orders') }}">Meus Pedidos</a>
+            {% elif current_role == 'delivery' %}
+                <a href="{{ url_for('delivery_panel') }}">Entregas</a>
+            {% elif current_role == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin_orders') }}">Pedidos</a>
+                <a href="{{ url_for('admin_config') }}">WhatsApp</a>
+                <a href="{{ url_for('admin_help') }}">Help</a>
+            {% endif %}
+        </nav>
+        {% endif %}
+        <div class="actions">
+            {% if current_role %}
+                <span class="user-chip">{{ current_name }}</span>
+                <a class="ghost-btn" href="javascript:history.back()">Voltar</a>
+                <a class="ghost-btn" href="{{ url_for('logout') }}">Sair</a>
+            {% else %}
+                <a class="ghost-btn" href="{{ url_for('login') }}">Entrar</a>
+            {% endif %}
+            {% if not hide_nav %}
+            <a class="primary-btn" href="{{ url_for('cart') }}">Carrinho</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div>
+            <h4>Top LanchesBG</h4>
+            <p>Feito com paixão. Servido com orgulho.</p>
+        </div>
+        <div>
+            <h4>Contato</h4>
+            <p>WhatsApp: (22) 99756-8835</p>
+            <p>Somente Delivery<br>Baixo Grande (SPA)</p>
+        </div>
+        <div>
+            <h4>Legal</h4>
+            <p><a href="{{ url_for('terms') }}">Termos e responsabilidades</a></p>
+        </div>
+    </footer>
+
+    <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/socket.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

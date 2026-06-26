@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Funcionários | Admin TopLanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Funcionários</h2>
+            <p>Gerencie entregadores e atribua perfis de acesso.</p>
+        </div>
+        <a class="secondary-btn" href="{{ url_for('admin_employee_new') }}">Novo funcionário</a>
+    </div>
+    <div class="table-panel">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Usuário</th>
+                    <th>Telefone</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entregador in entregadores %}
+                <tr>
+                    <td>{{ entregador.nome }}</td>
+                    <td>{{ entregador.usuario }}</td>
+                    <td>{{ entregador.telefone }}</td>
+                    <td>{{ 'Ativo' if entregador.ativo else 'Inativo' }}</td>
+                    <td>
+                        <a class="secondary-btn" href="{{ url_for('admin_employee_edit', employee_id=entregador.id) }}">Editar</a>
+                        <form method="POST" action="{{ url_for('admin_employee_toggle', employee_id=entregador.id) }}" style="display:inline;">
+                            <button class="ghost-btn" type="submit">{{ 'Desativar' if entregador.ativo else 'Ativar' }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin_employee_delete', employee_id=entregador.id) }}" style="display:inline; margin-left: 8px;" onsubmit="return confirm('Remover este funcionário?');">
+                            <button class="danger-btn" type="submit">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">Nenhum funcionário encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

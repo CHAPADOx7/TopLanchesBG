@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cozinha #{{ pedido.numero_pedido or pedido.id }}</title>
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 4mm;
+        }
+        body {
+            font-family: monospace;
+            width: 72mm;
+            margin: 0 auto;
+            font-size: 11px;
+            color: #000;
+        }
+        h1, h2, p {
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .cut {
+            border-top: 1px dashed #000;
+            margin: 6px 0;
+        }
+        .meta p {
+            margin-bottom: 2px;
+        }
+        .items {
+            margin-top: 6px;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 3px;
+        }
+        .item-name {
+            font-weight: 700;
+            word-break: break-word;
+        }
+        .obs {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .footer {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body onload="window.print();{% if auto %}setTimeout(function(){ window.close(); }, 500);{% endif %}">
+    <div class="header">
+        <h1>COMANDA COZINHA</h1>
+        <h2>#{{ pedido.numero_pedido or pedido.id }}</h2>
+    </div>
+
+    <div class="cut"></div>
+
+    <div class="meta">
+        <p><strong>Data:</strong> {{ pedido.data.strftime('%d/%m/%Y %H:%M') }}</p>
+        <p><strong>Cliente:</strong> {{ pedido.nome }}</p>
+        <p><strong>Bairro:</strong> {{ pedido.bairro }}</p>
+        <p><strong>Status:</strong> {{ pedido.status }}</p>
+    </div>
+
+    <div class="cut"></div>
+
+    <div class="items">
+        {% for item in pedido.itens %}
+        <div class="item">
+            <span class="item-name">{{ item.quantidade }}x {{ item.nome }}</span>
+            <span>R$ {{ '%.2f'|format(item.valor) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if pedido.observacao %}
+    <div class="cut"></div>
+    <p><strong>OBS:</strong></p>
+    <p class="obs">{{ pedido.observacao }}</p>
+    {% endif %}
+
+    <div class="cut"></div>
+    <p><strong>Total:</strong> R$ {{ '%.2f'|format(pedido.valor_total) }}</p>
+
+    <div class="footer">
+        <p>TopLanchesBG | Cozinha</p>
+    </div>
+</body>
+</html>

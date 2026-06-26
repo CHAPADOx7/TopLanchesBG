@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Pedidos | Admin Top LanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Pedidos</h2>
+            <p>Gerencie o fluxo ativo de pedidos e atribua entregadores.</p>
+        </div>
+        <div class="order-actions">
+            <label style="display:flex;align-items:center;gap:.4rem;">
+                <input type="checkbox" id="autoPrintKitchen" {% if not kitchen_printer_enabled %}disabled{% endif %} />
+                Automatizar comanda da cozinha
+            </label>
+            {% if kitchen_printer_enabled and kitchen_printer_name %}
+            <span>Impressora cozinha: {{ kitchen_printer_name }}</span>
+            {% else %}
+            <span>Impressora da cozinha não configurada.</span>
+            {% endif %}
+            <a class="secondary-btn" href="{{ url_for('admin_orders_archived') }}">Ver pedidos arquivados</a>
+            <a class="secondary-btn" href="{{ url_for('admin_help') }}">Help</a>
+        </div>
+    </div>
+    <div class="orders-grid">
+        {% for pedido in pedidos %}
+        {% set is_pending = pedido.status == 'Pendente' %}
+        {% set is_preparing = pedido.status in ['Em Preparo', 'Aceito'] %}
+        {% set is_out_for_delivery = pedido.status == 'Saiu para Entrega' %}
+        {% set is_finished = pedido.status in ['Entregue', 'Recusado', 'Arquivado'] %}
+        <article class="order-card">
+            <div class="order-top">
+                <span>Pedido #{{ pedido.numero_pedido or pedido.id }}</span>
+                <span class="status-chip {{ pedido.status|lower|replace(' ', '-') }}">{{ pedido.status }}</span>
+            </div>
+            <p><strong>Cliente:</strong> {{ pedido.nome }}</p>
+            <p><strong>Telefone:</strong> {{ pedido.telefone }}</p>
+            <p><strong>Endereço:</strong> {{ pedido.endereco }}, {{ pedido.bairro }}</p>
+            <p><strong>Total:</strong> R$ {{ '%.2f'|format(pedido.valor_total) }}</p>
+            <details>
+                <summary>Itens</summary>
+                <ul>
+                    {% for item in pedido.itens %}
+                    <li>{{ item.quantidade }}× {{ item.nome }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            <div class="order-actions">
+                {% if not is_finished %}
+                <button class="secondary-btn" {% if not is_pending %}disabled{% endif %} onclick="openAssignModal({{ pedido.id }})">Aceitar e Preparar</button>
+                <button class="secondary-btn" {% if not is_preparing %}disabled{% endif %} onclick="adminChangeStatus({{ pedido.id }}, 'Saiu para Entrega')">Saiu para Entrega</button>
+                <button class="ghost-btn" {% if not is_out_for_delivery %}disabled{% endif %} onclick="adminChangeStatus({{ pedido.id }}, 'Entregue')">Entregue</button>
+                {% else %}
+                <span>Pedido finalizado. Apenas impressão de documentos disponível.</span>
+                {% endif %}
+                <a class="secondary-btn" href="{{ url_for('print_kitchen_ticket', pedido_id=pedido.id) }}" target="_blank">Comanda Cozinha</a>
+                <a class="secondary-btn" href="{{ url_for('print_delivery_ticket', pedido_id=pedido.id) }}" target="_blank">Comanda Moto-boy</a>
+                <a class="secondary-btn" href="{{ url_for('print_store_receipt', pedido_id=pedido.id) }}" target="_blank">Nota / PDV</a>
+            </div>
+        </article>
+        {% else %}
+        <p>Nenhum pedido encontrado.</p>
+        {% endfor %}
+    </div>
+
+    <div id="assignModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <h3>Atribuir entregador</h3>
+            <p>Selecione quem vai entregar este pedido.</p>
+            <input type="hidden" id="assignOrderId" />
+            <label>Entregador</label>
+            <select id="assignDeliveryMan">
+                {% for entregador in entregadores %}
+                <option value="{{ entregador.id }}">{{ entregador.nome }} - {{ entregador.usuario }}</option>
+                {% endfor %}
+            </select>
+            <div class="order-actions" style="margin-top: 1rem;">
+                <button class="primary-btn" onclick="confirmAssignAndPrepare()">Confirmar</button>
+                <button class="ghost-btn" onclick="closeAssignModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</section>
+{% block scripts %}
+<script>
+function openAssignModal(id) {
+    document.getElementById('assignOrderId').value = id;
+    document.getElementById('assignModal').style.display = 'flex';
+}
+
+function closeAssignModal() {
+    document.getElementById('assignModal').style.display = 'none';
+}
+
+function confirmAssignAndPrepare() {
+    const id = document.getElementById('assignOrderId').value;
+    const entregadorId = document.getElementById('assignDeliveryMan').value;
+    const autoKitchen = document.getElementById('autoPrintKitchen').checked;
+    fetch('/api/order/' + id + '/accept-prepare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entregador_id: entregadorId })
+    }).then(async (response) => {
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            alert(data.error || 'Não foi possível aceitar este pedido.');
+            return;
+        }
+        if (autoKitchen) {
+            window.open('/admin/orders/' + id + '/print-kitchen?auto=1', '_blank');
+        }
+        location.reload();
+    });
+}
+
+function adminChangeStatus(id, status) {
+    fetch('/api/order/' + id + '/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+    }).then(async (response) => {
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            alert(data.error || 'Não foi possível alterar este status.');
+            return;
+        }
+        location.reload();
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

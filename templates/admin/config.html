@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Configuracoes | Admin Top LanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Horario e Delivery</h2>
+            <p>Configure horario de abertura/fechamento e status do delivery.</p>
+        </div>
+    </div>
+    <div class="form-panel">
+        <form method="POST" action="{{ url_for('admin_config') }}">
+            <label>Modo visual</label>
+            <select name="site_theme">
+                <option value="normal" {% if site_theme == 'normal' %}selected{% endif %}>Normal</option>
+                <option value="dark" {% if site_theme == 'dark' %}selected{% endif %}>Dark</option>
+            </select>
+            <label>Horario de abertura</label>
+            <input type="text" name="horario_abertura" value="{{ config_obj.horario_abertura or '' }}" placeholder="17:00" />
+            <label>Horario de fechamento</label>
+            <input type="text" name="horario_fechamento" value="{{ config_obj.horario_fechamento or '' }}" placeholder="00:00" />
+            <label>Tempo total de espera (minutos)</label>
+            <input type="number" min="5" name="tempo_espera_minutos" value="{{ tempo_espera }}" placeholder="35" />
+            <label>WhatsApp da loja</label>
+            <input type="text" name="whatsapp_empresa" value="{{ config_obj.whatsapp_empresa or '' }}" placeholder="5522999999999" />
+            <div class="divider" id="whatsapp-business"></div>
+            <h3>WhatsApp Business</h3>
+            <label><input type="checkbox" name="whatsapp_business_enabled" {% if whatsapp_enabled %}checked{% endif %}> Ativar mensagens automáticas</label>
+            <label>Token de acesso</label>
+            <input type="password" name="whatsapp_business_token" value="" placeholder="Deixe em branco para manter o token atual" />
+            <label>Phone Number ID</label>
+            <input type="text" name="whatsapp_business_phone_id" value="{{ whatsapp_phone_id or '' }}" placeholder="ID numerico do numero do WhatsApp" />
+            <label>Versao da API</label>
+            <input type="text" name="whatsapp_business_api_version" value="{{ whatsapp_api_version or 'v20.0' }}" placeholder="v20.0" />
+            <p>As mensagens automáticas são enviadas quando o pedido é aceito, despachado ou entregue.</p>
+            <label><input type="checkbox" name="entrega_ativa" {% if config_obj.entrega_ativa %}checked{% endif %}> Delivery aberto</label>
+            <button class="primary-btn" type="submit">Salvar configuracoes</button>
+        </form>
+    </div>
+    <div class="form-panel" style="margin-top: 1.5rem;">
+        <h3>Impressoras</h3>
+        <p>A configuração foi separada em uma área própria para facilitar o gerenciamento.</p>
+        <a class="primary-btn" href="{{ url_for('admin_printers') }}">Gerenciar impressoras</a>
+    </div>
+</section>
+{% endblock %}

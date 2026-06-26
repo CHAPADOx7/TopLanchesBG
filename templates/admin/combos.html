@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Combos | Admin TopLanchesBG{% endblock %}
+{% block content %}
+<section class="admin-shell">
+    <div class="section-head">
+        <div>
+            <h2>Combos</h2>
+            <p>Gerencie os combos promocionais do cardápio.</p>
+        </div>
+        <a class="primary-btn" href="{{ url_for('admin_combo_new') }}">Novo combo</a>
+    </div>
+    <div class="table-panel">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nome</th><th>Preço</th><th>Ativo</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                {% for combo in combos %}
+                <tr>
+                    <td>{{ combo.id }}</td>
+                    <td>{{ combo.nome }}</td>
+                    <td>R$ {{ '%.2f'|format(combo.preco) }}</td>
+                    <td>{{ 'Sim' if combo.ativo else 'Não' }}</td>
+                    <td class="table-actions">
+                        <a class="secondary-btn" href="{{ url_for('admin_combo_edit', combo_id=combo.id) }}">Editar</a>
+                        <form method="POST" action="{{ url_for('admin_combo_toggle', combo_id=combo.id) }}" style="display:inline;">
+                            <button class="secondary-btn" type="submit">{{ 'Desativar' if combo.ativo else 'Ativar' }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin_combo_delete', combo_id=combo.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este combo?');">
+                            <button class="ghost-btn" type="submit">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
