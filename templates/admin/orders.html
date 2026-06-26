@@ -12,6 +12,7 @@
                 <input type="checkbox" id="autoPrintKitchen" {% if not kitchen_printer_enabled %}disabled{% endif %} />
                 Automatizar comanda da cozinha
             </label>
+            <button class="primary-btn" type="button" onclick="openManualOrderModal()">Pedido Manual</button>
             {% if kitchen_printer_enabled and kitchen_printer_name %}
             <span>Impressora cozinha: {{ kitchen_printer_name }}</span>
             {% else %}
@@ -79,6 +80,72 @@
             </div>
         </div>
     </div>
+
+    <div id="manualOrderModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card modal-wide">
+            <h3>Criar pedido manual</h3>
+            <p>Use quando o cliente não conseguir finalizar pelo site. O número do pedido é gerado automaticamente.</p>
+            <form method="POST" action="{{ url_for('admin_manual_order') }}" class="manual-order-grid">
+                <label>Nome do cliente</label>
+                <input type="text" name="nome" required placeholder="Nome completo" />
+
+                <label>Telefone</label>
+                <input type="text" name="telefone" required placeholder="(22) 99999-9999" />
+
+                <label>Endereço</label>
+                <input type="text" name="endereco" required placeholder="Rua, número e complemento" />
+
+                <label>Bairro</label>
+                <input type="text" name="bairro" required placeholder="Bairro para taxa de entrega" />
+
+                <label>Item principal</label>
+                <select id="manualMainItem" name="item_principal_key" required>
+                    <option value="">Selecione o item principal</option>
+                    {% for produto in produtos_principais %}
+                    <option value="produto:{{ produto.id }}" data-preco="{{ '%.2f'|format(produto.preco) }}">{{ produto.nome }} - R$ {{ '%.2f'|format(produto.preco) }}</option>
+                    {% endfor %}
+                    {% for combo in combos_ativos %}
+                    <option value="combo:{{ combo.id }}" data-preco="{{ '%.2f'|format(combo.preco) }}">Combo: {{ combo.nome }} - R$ {{ '%.2f'|format(combo.preco) }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Quantidade do item principal</label>
+                <input type="number" id="manualMainQty" name="quantidade_principal" min="1" value="1" required />
+
+                <div class="inline-field">
+                    <label><input type="checkbox" id="manualHasDrink" name="deseja_bebida" /> Quer bebida?</label>
+                </div>
+
+                <label>Bebida</label>
+                <select id="manualDrink" name="bebida_key" disabled>
+                    <option value="">Selecione a bebida</option>
+                    {% for bebida in bebidas_ativas %}
+                    <option value="produto:{{ bebida.id }}" data-preco="{{ '%.2f'|format(bebida.preco) }}">{{ bebida.nome }} - R$ {{ '%.2f'|format(bebida.preco) }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Quantidade da bebida</label>
+                <input type="number" id="manualDrinkQty" name="quantidade_bebida" min="1" value="1" disabled />
+
+                <div class="manual-total-box">
+                    <p><strong>Subtotal:</strong> <span id="manualSubtotal">R$ 0,00</span></p>
+                    <p><strong>Taxa de entrega:</strong> <span id="manualFee">R$ 0,00</span></p>
+                    <p><strong>Total:</strong> <span id="manualTotal">R$ 0,00</span></p>
+                </div>
+
+                <label>Forma de pagamento</label>
+                <input type="text" name="forma_pagamento" value="Dinheiro em especie" placeholder="Ex: PIX" />
+
+                <label>Observação</label>
+                <textarea name="observacao" placeholder="Observações do pedido e referência"></textarea>
+
+                <div class="order-actions" style="margin-top: 1rem;">
+                    <button class="primary-btn" type="submit">Criar pedido manual</button>
+                    <button class="ghost-btn" type="button" onclick="closeManualOrderModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </section>
 {% block scripts %}
 <script>
@@ -89,6 +156,14 @@ function openAssignModal(id) {
 
 function closeAssignModal() {
     document.getElementById('assignModal').style.display = 'none';
+}
+
+function openManualOrderModal() {
+    document.getElementById('manualOrderModal').style.display = 'flex';
+}
+
+function closeManualOrderModal() {
+    document.getElementById('manualOrderModal').style.display = 'none';
 }
 
 function confirmAssignAndPrepare() {
@@ -126,6 +201,66 @@ function adminChangeStatus(id, status) {
         location.reload();
     });
 }
+
+const manualHasDrink = document.getElementById('manualHasDrink');
+const manualDrink = document.getElementById('manualDrink');
+const manualDrinkQty = document.getElementById('manualDrinkQty');
+const manualMainItem = document.getElementById('manualMainItem');
+const manualMainQty = document.getElementById('manualMainQty');
+const manualNeighborhood = document.querySelector('input[name="bairro"]');
+const manualSubtotal = document.getElementById('manualSubtotal');
+const manualFee = document.getElementById('manualFee');
+const manualTotal = document.getElementById('manualTotal');
+const feeByNeighborhood = {{ taxas_entrega_map|tojson }};
+const defaultFee = Number({{ '%.2f'|format(taxa_padrao) }});
+
+function asMoney(value) {
+    return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function selectedPrice(selectEl) {
+    if (!selectEl) return 0;
+    const option = selectEl.options[selectEl.selectedIndex];
+    return option ? Number(option.dataset.preco || 0) : 0;
+}
+
+function manualDeliveryFee() {
+    const bairro = (manualNeighborhood?.value || '').trim().toLowerCase();
+    return bairro && feeByNeighborhood[bairro] !== undefined ? Number(feeByNeighborhood[bairro]) : defaultFee;
+}
+
+function recalcManualTotal() {
+    const mainPrice = selectedPrice(manualMainItem);
+    const mainQty = Math.max(1, Number(manualMainQty?.value || 1));
+    const drinkPrice = (manualHasDrink?.checked && manualDrink && !manualDrink.disabled) ? selectedPrice(manualDrink) : 0;
+    const drinkQty = (manualHasDrink?.checked && manualDrinkQty && !manualDrinkQty.disabled) ? Math.max(1, Number(manualDrinkQty.value || 1)) : 0;
+    const subtotalValue = (mainPrice * mainQty) + (drinkPrice * drinkQty);
+    const feeValue = manualDeliveryFee();
+    const totalValue = subtotalValue + feeValue;
+    if (manualSubtotal) manualSubtotal.textContent = asMoney(subtotalValue);
+    if (manualFee) manualFee.textContent = asMoney(feeValue);
+    if (manualTotal) manualTotal.textContent = asMoney(totalValue);
+}
+
+if (manualHasDrink && manualDrink) {
+    manualHasDrink.addEventListener('change', () => {
+        manualDrink.disabled = !manualHasDrink.checked;
+        if (manualDrinkQty) manualDrinkQty.disabled = !manualHasDrink.checked;
+        if (!manualHasDrink.checked) {
+            manualDrink.value = '';
+            if (manualDrinkQty) manualDrinkQty.value = '1';
+        }
+        recalcManualTotal();
+    });
+}
+
+[manualMainItem, manualMainQty, manualDrink, manualDrinkQty, manualNeighborhood].forEach(el => {
+    if (!el) return;
+    el.addEventListener('change', recalcManualTotal);
+    el.addEventListener('input', recalcManualTotal);
+});
+
+recalcManualTotal();
 </script>
 {% endblock %}
 {% endblock %}

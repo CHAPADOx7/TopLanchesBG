@@ -3,21 +3,21 @@
 {% block content %}
 <section class="hero auth-shell">
     <div class="hero-copy">
-        <p class="eyebrow">Top LanchesBG</p>
-        <h1>Cada pedido nasce no <span>fogo certo</span> e chega inesquecível.</h1>
-        <p>Da chapa ao clique final, sua operação roda com ritmo de hamburgueria raiz: rápida, quente e sem perder sabor.</p>
+        <p class="eyebrow">Bem-vindo ao Top LanchesBG</p>
+        <h1>Peça com <span>praticidade</span>, acompanhe com transparência.</h1>
+        <p>Clientes acompanham pedidos em tempo real e equipe opera tudo em um único painel, com rapidez e organização.</p>
         <div class="hero-actions">
             <a class="secondary-btn" href="{{ url_for('register') }}">Criar conta</a>
             <a class="ghost-btn" href="{{ url_for('index') }}">Voltar ao início</a>
         </div>
     </div>
     <div class="auth-card">
-        <h2>Entrar</h2>
+        <h2>Entrar na conta</h2>
         <form method="POST" action="{{ url_for('login') }}">
             <label>Usuário / E-mail / Telefone</label>
-            <input type="text" name="usuario" required placeholder="Digite seu acesso" />
+            <input type="text" name="usuario" required placeholder="Informe seu usuário, e-mail ou telefone" />
             <label>Senha</label>
-            <input type="password" name="senha" required placeholder="Sua senha segura" />
+            <input type="password" name="senha" required placeholder="Digite sua senha" />
             <button class="primary-btn" type="submit">Entrar</button>
             <small><a href="{{ url_for('register') }}">Ainda não tenho cadastro</a></small>
         </form>

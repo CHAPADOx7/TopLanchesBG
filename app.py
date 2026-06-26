@@ -30,6 +30,8 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 ROLE_ADMIN = config.ROLE_ADMIN
 ROLE_CLIENT = config.ROLE_CLIENT
 ROLE_DELIVERY = config.ROLE_DELIVERY
+DEFAULT_ADMIN_USER = 'topbgadmin26'
+DEFAULT_ADMIN_PASSWORD = 'bg2k26s2.'
 
 
 def init_app():
@@ -40,14 +42,33 @@ def init_app():
         if not Configuracao.query.first():
             db.session.add(Configuracao(horario_abertura='17:00', horario_fechamento='00:00', whatsapp_empresa='552299568835', taxa_fixa=5.00, entrega_ativa=True))
             db.session.commit()
-        if not Usuario.query.filter_by(usuario='admin').first():
-            senha = generate_password_hash('admin123', method='pbkdf2:sha256', salt_length=12)
-            db.session.add(Usuario(nome='Administrador', usuario='admin', senha_hash=senha, nivel=ROLE_ADMIN, ativo=True))
-            db.session.commit()
-        if not Entregador.query.filter_by(usuario='entregador').first():
-            senha_ent = generate_password_hash('entregador123', method='pbkdf2:sha256', salt_length=12)
-            db.session.add(Entregador(nome='Entregador Teste', telefone='(22) 99999-9999', usuario='entregador', senha_hash=senha_ent, ativo=True))
-            db.session.commit()
+        # Mantem apenas o admin oficial solicitado.
+        admin_user = Usuario.query.filter_by(usuario=DEFAULT_ADMIN_USER).first()
+        if not admin_user:
+            admin_user = Usuario(
+                nome='Administrador Top LanchesBG',
+                usuario=DEFAULT_ADMIN_USER,
+                senha_hash=generate_password_hash(DEFAULT_ADMIN_PASSWORD, method='pbkdf2:sha256', salt_length=12),
+                nivel=ROLE_ADMIN,
+                ativo=True,
+            )
+            db.session.add(admin_user)
+        else:
+            admin_user.nome = 'Administrador Top LanchesBG'
+            admin_user.senha_hash = generate_password_hash(DEFAULT_ADMIN_PASSWORD, method='pbkdf2:sha256', salt_length=12)
+            admin_user.nivel = ROLE_ADMIN
+            admin_user.ativo = True
+
+        # Garante ID válido para não excluir o próprio admin na limpeza.
+        db.session.flush()
+
+        outros_usuarios = Usuario.query.filter(Usuario.id != admin_user.id).all()
+        for usuario in outros_usuarios:
+            db.session.delete(usuario)
+
+        # Remove usuarios de teste de entrega/entregador para manter apenas acesso admin.
+        for entregador in Entregador.query.all():
+            db.session.delete(entregador)
         defaults = [
             ('Dinheiro em especie', 'Pagamento em dinheiro', True),
             ('Cartao de credito', 'Credito', False),
@@ -428,15 +449,181 @@ def admin_dashboard():
 def admin_orders():
     pedidos = Pedido.query.filter(Pedido.status != 'Arquivado').order_by(Pedido.data.desc()).all()
     entregadores = Entregador.query.filter_by(ativo=True).order_by(Entregador.nome).all()
+    produtos_principais = Produto.query.filter(
+        Produto.ativo == True,
+        ~func.lower(Produto.categoria).in_(['bebidas', 'bebida'])
+    ).order_by(Produto.nome).all()
+    combos_ativos = Combo.query.filter_by(ativo=True).order_by(Combo.nome).all()
+    bebidas_ativas = Produto.query.filter(
+        Produto.ativo == True,
+        func.lower(Produto.categoria).in_(['bebidas', 'bebida'])
+    ).order_by(Produto.nome).all()
+    taxas_ativas = TaxaEntrega.query.filter_by(ativo=True).all()
+    taxas_entrega_map = {taxa.bairro.lower(): float(taxa.valor) for taxa in taxas_ativas}
+    config_obj = Configuracao.query.first()
+    taxa_padrao = float(config_obj.taxa_fixa) if config_obj and config_obj.taxa_fixa is not None else float(config.DEFAULT_DELIVERY_FEE)
     kitchen_printer_enabled = get_param('kitchen_printer_enabled', 'false').lower() == 'true'
     kitchen_printer_name = get_param('kitchen_printer_name', '')
     return render_template(
         'admin/orders.html',
         pedidos=pedidos,
         entregadores=entregadores,
+        produtos_principais=produtos_principais,
+        combos_ativos=combos_ativos,
+        bebidas_ativas=bebidas_ativas,
+        taxas_entrega_map=taxas_entrega_map,
+        taxa_padrao=taxa_padrao,
         kitchen_printer_enabled=kitchen_printer_enabled,
         kitchen_printer_name=kitchen_printer_name,
     )
+
+
+@app.route('/admin/orders/manual', methods=['POST'])
+@role_required(ROLE_ADMIN)
+def admin_manual_order():
+    nome = request.form.get('nome', '').strip()
+    telefone = request.form.get('telefone', '').strip()
+    endereco = request.form.get('endereco', '').strip()
+    bairro = request.form.get('bairro', '').strip()
+    item_principal_key = request.form.get('item_principal_key', '').strip()
+    observacao = request.form.get('observacao', '').strip()
+    forma_pagamento = request.form.get('forma_pagamento', 'Dinheiro em especie').strip() or 'Dinheiro em especie'
+    deseja_bebida = request.form.get('deseja_bebida') == 'on'
+    bebida_key = request.form.get('bebida_key', '').strip() if deseja_bebida else ''
+
+    try:
+        quantidade_principal = max(1, int(request.form.get('quantidade_principal', '1')))
+    except ValueError:
+        quantidade_principal = 1
+
+    try:
+        quantidade_bebida = max(1, int(request.form.get('quantidade_bebida', '1')))
+    except ValueError:
+        quantidade_bebida = 1
+
+    if not nome or not telefone or not endereco or not bairro or not item_principal_key:
+        flash('Preencha nome, telefone, endereco, bairro e selecione o item principal.', 'warning')
+        return redirect(url_for('admin_orders'))
+
+    def parse_item_key(raw_value):
+        parts = (raw_value or '').split(':', 1)
+        if len(parts) != 2:
+            return None, None
+        item_type = parts[0].strip().lower()
+        try:
+            item_id = int(parts[1])
+        except ValueError:
+            return None, None
+        return item_type, item_id
+
+    item_type, item_id = parse_item_key(item_principal_key)
+    if item_type == 'produto':
+        principal_item = Produto.query.get(item_id)
+        if not principal_item or not principal_item.ativo:
+            flash('Item principal invalido.', 'warning')
+            return redirect(url_for('admin_orders'))
+        principal_nome = principal_item.nome
+        principal_preco = Decimal(str(principal_item.preco))
+        principal_produto_id = principal_item.id
+        principal_combo_id = None
+    elif item_type == 'combo':
+        principal_item = Combo.query.get(item_id)
+        if not principal_item or not principal_item.ativo:
+            flash('Item principal invalido.', 'warning')
+            return redirect(url_for('admin_orders'))
+        principal_nome = principal_item.nome
+        principal_preco = Decimal(str(principal_item.preco))
+        principal_produto_id = None
+        principal_combo_id = principal_item.id
+    else:
+        flash('Selecione um item principal valido.', 'warning')
+        return redirect(url_for('admin_orders'))
+
+    bebida_nome = None
+    bebida_preco = Decimal('0')
+    bebida_produto_id = None
+    if deseja_bebida and bebida_key:
+        bebida_type, bebida_id = parse_item_key(bebida_key)
+        if bebida_type != 'produto':
+            flash('Bebida invalida.', 'warning')
+            return redirect(url_for('admin_orders'))
+        bebida_item = Produto.query.get(bebida_id)
+        if not bebida_item or not bebida_item.ativo:
+            flash('Bebida invalida.', 'warning')
+            return redirect(url_for('admin_orders'))
+        if (bebida_item.categoria or '').strip().lower() not in ['bebida', 'bebidas']:
+            flash('Selecione uma bebida valida da lista.', 'warning')
+            return redirect(url_for('admin_orders'))
+        bebida_nome = bebida_item.nome
+        bebida_preco = Decimal(str(bebida_item.preco))
+        bebida_produto_id = bebida_item.id
+
+    cliente = Cliente.query.filter_by(telefone=telefone).first()
+    if not cliente:
+        safe_phone = ''.join(ch for ch in telefone if ch.isdigit()) or str(int(datetime.utcnow().timestamp()))
+        guest_email = f"manual_{safe_phone}@toplanches.local"
+        email_exists = Cliente.query.filter_by(email=guest_email).first()
+        if email_exists:
+            guest_email = f"manual_{safe_phone}_{int(datetime.utcnow().timestamp())}@toplanches.local"
+        cliente = Cliente(
+            nome=nome,
+            telefone=telefone,
+            email=guest_email,
+            senha_hash=generate_password_hash(f'manual-{safe_phone}', method='pbkdf2:sha256', salt_length=12),
+            ativo=True,
+        )
+        db.session.add(cliente)
+        db.session.flush()
+
+    principal_total = principal_preco * quantidade_principal
+    bebida_total = bebida_preco * quantidade_bebida if bebida_nome else Decimal('0')
+    subtotal = principal_total + bebida_total
+    taxa_entrega = Decimal(str(get_delivery_fee(bairro)))
+    total = subtotal + taxa_entrega
+
+    pedido = Pedido(
+        cliente_id=cliente.id,
+        nome=nome,
+        telefone=telefone,
+        endereco=endereco,
+        bairro=bairro,
+        observacao=observacao,
+        subtotal=subtotal,
+        desconto=Decimal('0'),
+        taxa_entrega=taxa_entrega,
+        valor_total=total,
+        forma_pagamento=forma_pagamento,
+        cupom_aplicado=None,
+        status='Pendente',
+        data=datetime.utcnow(),
+    )
+    pedido.numero_pedido = get_next_order_number()
+    db.session.add(pedido)
+    db.session.flush()
+
+    db.session.add(ItemPedido(
+        pedido_id=pedido.id,
+        produto_id=principal_produto_id,
+        combo_id=principal_combo_id,
+        nome=principal_nome,
+        quantidade=quantidade_principal,
+        valor=principal_total,
+    ))
+
+    if bebida_nome:
+        db.session.add(ItemPedido(
+            pedido_id=pedido.id,
+            produto_id=bebida_produto_id,
+            combo_id=None,
+            nome=bebida_nome,
+            quantidade=quantidade_bebida,
+            valor=bebida_total,
+        ))
+
+    db.session.commit()
+    socketio.emit('new_order', {'order_id': pedido.id, 'status': pedido.status})
+    flash(f'Pedido manual #{pedido.numero_pedido or pedido.id} criado com sucesso.', 'success')
+    return redirect(url_for('admin_orders'))
 
 
 @app.route('/admin/orders/archived')
@@ -1221,6 +1408,10 @@ def on_join_room(data):
         join_room(room)
 
 
+# Inicializa estrutura e usuario admin em qualquer forma de execução
+# (python app.py, gunicorn, waitress, etc.).
+init_app()
+
+
 if __name__ == '__main__':
-    init_app()
     socketio.run(app, host='0.0.0.0', port=5000, debug=config.DEBUG)

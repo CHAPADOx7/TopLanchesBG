@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Produtos | Admin TopLanchesBG{% endblock %}
+{% block title %}Produtos | Admin Top LanchesBG{% endblock %}
 {% block content %}
 <section class="admin-shell">
     <div class="section-head">
@@ -36,10 +36,10 @@
                     <td>{{ 'Sim' if produto.ativo else 'Não' }}</td>
                     <td class="table-actions">
                         <a class="secondary-btn" href="{{ url_for('admin_product_edit', product_id=produto.id) }}">Editar</a>
-                        <form method="POST" action="{{ url_for('admin_product_toggle', product_id=produto.id) }}" style="display:inline;">
+                        <form class="table-inline-form" method="POST" action="{{ url_for('admin_product_toggle', product_id=produto.id) }}">
                             <button class="secondary-btn" type="submit">{{ 'Desativar' if produto.ativo else 'Ativar' }}</button>
                         </form>
-                        <form method="POST" action="{{ url_for('admin_product_delete', product_id=produto.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este produto?');">
+                        <form class="table-inline-form" method="POST" action="{{ url_for('admin_product_delete', product_id=produto.id) }}" onsubmit="return confirm('Excluir este produto?');">
                             <button class="ghost-btn" type="submit">Excluir</button>
                         </form>
                     </td>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Combos | Admin TopLanchesBG{% endblock %}
+{% block title %}Combos | Admin Top LanchesBG{% endblock %}
 {% block content %}
 <section class="admin-shell">
     <div class="section-head">
@@ -23,10 +23,10 @@
                     <td>{{ 'Sim' if combo.ativo else 'Não' }}</td>
                     <td class="table-actions">
                         <a class="secondary-btn" href="{{ url_for('admin_combo_edit', combo_id=combo.id) }}">Editar</a>
-                        <form method="POST" action="{{ url_for('admin_combo_toggle', combo_id=combo.id) }}" style="display:inline;">
+                        <form class="table-inline-form" method="POST" action="{{ url_for('admin_combo_toggle', combo_id=combo.id) }}">
                             <button class="secondary-btn" type="submit">{{ 'Desativar' if combo.ativo else 'Ativar' }}</button>
                         </form>
-                        <form method="POST" action="{{ url_for('admin_combo_delete', combo_id=combo.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este combo?');">
+                        <form class="table-inline-form" method="POST" action="{{ url_for('admin_combo_delete', combo_id=combo.id) }}" onsubmit="return confirm('Excluir este combo?');">
                             <button class="ghost-btn" type="submit">Excluir</button>
                         </form>
                     </td>

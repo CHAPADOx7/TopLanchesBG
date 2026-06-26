@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Formas de Pagamento | Admin TopLanchesBG{% endblock %}
+{% block title %}Formas de Pagamento | Admin Top LanchesBG{% endblock %}
 {% block content %}
 <section class="admin-shell">
     <div class="section-head">
@@ -21,10 +21,10 @@
                     <td>{{ 'Sim' if forma.ativo else 'Não' }}</td>
                     <td>{{ 'Sim' if forma.aceita_troco else 'Não' }}</td>
                     <td class="table-actions">
-                        <form method="POST" action="{{ url_for('admin_payment_toggle', payment_id=forma.id) }}" style="display:inline;">
+                        <form class="table-inline-form" method="POST" action="{{ url_for('admin_payment_toggle', payment_id=forma.id) }}">
                             <button class="secondary-btn" type="submit">{{ 'Desativar' if forma.ativo else 'Ativar' }}</button>
                         </form>
-                        <form method="POST" action="{{ url_for('admin_payment_delete', payment_id=forma.id) }}" style="display:inline;" onsubmit="return confirm('Excluir esta forma?');">
+                        <form class="table-inline-form" method="POST" action="{{ url_for('admin_payment_delete', payment_id=forma.id) }}" onsubmit="return confirm('Excluir esta forma?');">
                             <button class="ghost-btn" type="submit">Excluir</button>
                         </form>
                     </td>

@@ -489,6 +489,20 @@ textarea {
 .modal-card h3 {
   margin-top: 0;
 }
+.modal-card.modal-wide {
+  width: min(760px, 100%);
+}
+.manual-order-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+.manual-order-grid .inline-field {
+  margin: 0.5rem 0;
+}
+.manual-order-grid textarea {
+  min-height: 90px;
+  resize: vertical;
+}
 .admin-shell {
   padding: 3rem 2rem;
 }
@@ -517,6 +531,22 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
+}
+.table-inline-form {
+  display: inline-flex;
+  margin: 0;
+}
+.table-actions a,
+.table-actions button,
+.table-actions form button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.58rem 1rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 .form-panel {
   margin-top: 2rem;
@@ -547,6 +577,16 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
+}
+.order-actions a,
+.order-actions button,
+.order-actions form button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  line-height: 1;
 }
 .order-actions button:disabled {
   opacity: 0.45;
@@ -561,10 +601,25 @@ textarea {
   flex-wrap: wrap;
   gap: 1rem;
   margin: 2rem 0 0;
+  align-items: center;
 }
 .admin-quick-links a {
   display: inline-flex;
   align-items: center;
+}
+.admin-quick-links form {
+  display: inline-flex;
+  align-items: center;
+}
+.manual-total-box {
+  margin-top: 0.25rem;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 248, 238, 0.85);
+}
+.manual-total-box p {
+  margin: 0.2rem 0;
 }
 
 body.theme-dark {
