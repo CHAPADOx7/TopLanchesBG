@@ -12,6 +12,10 @@ DATABASE_HOST = os.environ.get('DB_HOST', '127.0.0.1')
 DATABASE_PORT = os.environ.get('DB_PORT') or '3306'
 DATABASE_NAME = os.environ.get('DB_NAME', 'toplanches')
 DATABASE_QUERY = os.environ.get('DB_QUERY', '').strip()
+RESERVED_SYSTEM_SCHEMAS = {'sys', 'mysql', 'information_schema', 'performance_schema'}
+
+if DATABASE_NAME.lower() in RESERVED_SYSTEM_SCHEMAS:
+    DATABASE_NAME = 'toplanches'
 
 if DATABASE_URL:
     DATABASE_URI = DATABASE_URL

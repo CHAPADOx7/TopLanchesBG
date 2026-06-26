@@ -1,0 +1,2 @@
+id,nome,usuario,senha_hash,nivel,ativo
+1,Administrador Top LanchesBG,topbgadmin26,pbkdf2:sha256:600000$8Tzw3LaMINXM$1c418071c3e63a85d4e225ce282a1c15878a237bb25f5494322a4ea3c1baca9f,admin,1

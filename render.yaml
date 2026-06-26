@@ -6,7 +6,7 @@ services:
     region: oregon
     autoDeploy: true
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --worker-class eventlet --workers 1 --timeout 120 --keep-alive 65 app:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 8 --timeout 120 --keep-alive 65 app:app
     healthCheckPath: /login
     envVars:
       - key: SECRET_KEY
@@ -22,6 +22,6 @@ services:
       - key: DB_PORT
         value: "4000"
       - key: DB_NAME
-        value: toplanches
+        value: test
       - key: DB_QUERY
         value: ssl_verify_cert=true&ssl_verify_identity=true

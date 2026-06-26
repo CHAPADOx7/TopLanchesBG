@@ -23,9 +23,8 @@ app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'img', 'uploads')
 app.config['ALLOWED_IMAGE_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 db.init_app(app)
-# Use o modo assíncrono padrão do Flask-SocketIO para compatibilidade.
-# Se quiser eventlet, instale e configure manualmente.
-socketio = SocketIO(app, cors_allowed_origins='*')
+# Força threading para evitar dependência de eventlet no Render/Python 3.14.
+socketio = SocketIO(app, cors_allowed_origins='*', async_mode='threading')
 
 ROLE_ADMIN = config.ROLE_ADMIN
 ROLE_CLIENT = config.ROLE_CLIENT
@@ -450,7 +449,7 @@ def admin_orders():
     pedidos = Pedido.query.filter(Pedido.status != 'Arquivado').order_by(Pedido.data.desc()).all()
     entregadores = Entregador.query.filter_by(ativo=True).order_by(Entregador.nome).all()
     produtos_principais = Produto.query.filter(
-        Produto.atgit merge idxivo == True,
+        Produto.ativo == True,
         ~func.lower(Produto.categoria).in_(['bebidas', 'bebida'])
     ).order_by(Produto.nome).all()
     combos_ativos = Combo.query.filter_by(ativo=True).order_by(Combo.nome).all()

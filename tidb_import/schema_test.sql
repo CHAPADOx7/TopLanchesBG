@@ -1,13 +1,13 @@
--- Top LanchesBG
+﻿-- Top LanchesBG
 -- Schema inicial para MySQL / MariaDB
--- Compatível com o projeto atual em Flask + SQLAlchemy
+-- CompatÃ­vel com o projeto atual em Flask + SQLAlchemy
 
 -- Para TiDB Cloud, selecione o database `toplanches` no editor SQL
 -- antes de executar este script. Evitamos comandos DROP/CREATE DATABASE
 -- para funcionar com usuarios sem privilegios de administracao.
 SET NAMES utf8mb4;
 
-CREATE TABLE IF NOT EXISTS configuracoes (
+CREATE TABLE IF NOT EXISTS test.configuracoes (
   id INT NOT NULL AUTO_INCREMENT,
   horario_abertura VARCHAR(50) NULL,
   horario_fechamento VARCHAR(50) NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS configuracoes (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS usuarios (
+CREATE TABLE IF NOT EXISTS test.usuarios (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(120) NOT NULL,
   usuario VARCHAR(80) NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   UNIQUE KEY uq_usuarios_usuario (usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS clientes (
+CREATE TABLE IF NOT EXISTS test.clientes (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(120) NOT NULL,
   telefone VARCHAR(30) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS clientes (
   UNIQUE KEY uq_clientes_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS entregadores (
+CREATE TABLE IF NOT EXISTS test.entregadores (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(120) NOT NULL,
   telefone VARCHAR(30) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS entregadores (
   UNIQUE KEY uq_entregadores_usuario (usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS produtos (
+CREATE TABLE IF NOT EXISTS test.produtos (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(160) NOT NULL,
   descricao TEXT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS produtos (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS combos (
+CREATE TABLE IF NOT EXISTS test.combos (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(160) NOT NULL,
   descricao TEXT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS combos (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS cupons (
+CREATE TABLE IF NOT EXISTS test.cupons (
   id INT NOT NULL AUTO_INCREMENT,
   codigo VARCHAR(60) NOT NULL,
   tipo ENUM('fixo', 'percentual') NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS cupons (
   UNIQUE KEY uq_cupons_codigo (codigo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS banners (
+CREATE TABLE IF NOT EXISTS test.banners (
   id INT NOT NULL AUTO_INCREMENT,
   titulo VARCHAR(160) NOT NULL,
   descricao TEXT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS banners (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS formas_pagamento (
+CREATE TABLE IF NOT EXISTS test.formas_pagamento (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(120) NOT NULL,
   descricao VARCHAR(255) NULL,
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS formas_pagamento (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS taxas_entrega (
+CREATE TABLE IF NOT EXISTS test.taxas_entrega (
   id INT NOT NULL AUTO_INCREMENT,
   bairro VARCHAR(120) NOT NULL,
   valor DECIMAL(10,2) NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS taxas_entrega (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS pedidos (
+CREATE TABLE IF NOT EXISTS test.pedidos (
   id INT NOT NULL AUTO_INCREMENT,
   numero_pedido INT NULL,
   cliente_id INT NOT NULL,
@@ -140,11 +140,11 @@ CREATE TABLE IF NOT EXISTS pedidos (
   PRIMARY KEY (id),
   KEY idx_pedidos_cliente_id (cliente_id),
   KEY idx_pedidos_entregador_id (entregador_id),
-  CONSTRAINT fk_pedidos_cliente FOREIGN KEY (cliente_id) REFERENCES clientes (id),
-  CONSTRAINT fk_pedidos_entregador FOREIGN KEY (entregador_id) REFERENCES entregadores (id)
+  CONSTRAINT fk_pedidos_cliente FOREIGN KEY (cliente_id) REFERENCES test.clientes (id),
+  CONSTRAINT fk_pedidos_entregador FOREIGN KEY (entregador_id) REFERENCES test.entregadores (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS itens_pedido (
+CREATE TABLE IF NOT EXISTS test.itens_pedido (
   id INT NOT NULL AUTO_INCREMENT,
   pedido_id INT NOT NULL,
   produto_id INT NULL,
@@ -156,12 +156,12 @@ CREATE TABLE IF NOT EXISTS itens_pedido (
   KEY idx_itens_pedido_pedido_id (pedido_id),
   KEY idx_itens_pedido_produto_id (produto_id),
   KEY idx_itens_pedido_combo_id (combo_id),
-  CONSTRAINT fk_itens_pedido_pedido FOREIGN KEY (pedido_id) REFERENCES pedidos (id) ON DELETE CASCADE,
-  CONSTRAINT fk_itens_pedido_produto FOREIGN KEY (produto_id) REFERENCES produtos (id),
-  CONSTRAINT fk_itens_pedido_combo FOREIGN KEY (combo_id) REFERENCES combos (id)
+  CONSTRAINT fk_itens_pedido_pedido FOREIGN KEY (pedido_id) REFERENCES test.pedidos (id) ON DELETE CASCADE,
+  CONSTRAINT fk_itens_pedido_produto FOREIGN KEY (produto_id) REFERENCES test.produtos (id),
+  CONSTRAINT fk_itens_pedido_combo FOREIGN KEY (combo_id) REFERENCES test.combos (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS parametros_sistema (
+CREATE TABLE IF NOT EXISTS test.parametros_sistema (
   id INT NOT NULL AUTO_INCREMENT,
   chave VARCHAR(80) NOT NULL,
   valor VARCHAR(255) NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS parametros_sistema (
   UNIQUE KEY uq_parametros_sistema_chave (chave)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS historico_alteracoes (
+CREATE TABLE IF NOT EXISTS test.historico_alteracoes (
   id INT NOT NULL AUTO_INCREMENT,
   entidade VARCHAR(80) NOT NULL,
   item_id INT NULL,
@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS historico_alteracoes (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO configuracoes (id, horario_abertura, horario_fechamento, whatsapp_empresa, taxa_fixa, entrega_ativa)
+INSERT INTO test.configuracoes (id, horario_abertura, horario_fechamento, whatsapp_empresa, taxa_fixa, entrega_ativa)
 VALUES (1, '17:00', '00:00', '552299568835', 5.00, 1)
 ON DUPLICATE KEY UPDATE
   horario_abertura = VALUES(horario_abertura),
@@ -192,7 +192,7 @@ ON DUPLICATE KEY UPDATE
   taxa_fixa = VALUES(taxa_fixa),
   entrega_ativa = VALUES(entrega_ativa);
 
-INSERT INTO usuarios (id, nome, usuario, senha_hash, nivel, ativo)
+INSERT INTO test.usuarios (id, nome, usuario, senha_hash, nivel, ativo)
 VALUES (
   1,
   'Administrador Top LanchesBG',
@@ -207,7 +207,7 @@ ON DUPLICATE KEY UPDATE
   nivel = VALUES(nivel),
   ativo = VALUES(ativo);
 
-INSERT INTO formas_pagamento (nome, descricao, ativo, aceita_troco, valor_troco)
+INSERT INTO test.formas_pagamento (nome, descricao, ativo, aceita_troco, valor_troco)
 SELECT seed.nome, seed.descricao, seed.ativo, seed.aceita_troco, seed.valor_troco
 FROM (
   SELECT 'Dinheiro em especie' AS nome, 'Pagamento em dinheiro' AS descricao, 1 AS ativo, 1 AS aceita_troco, 0.00 AS valor_troco
@@ -222,11 +222,11 @@ FROM (
 ) AS seed
 WHERE NOT EXISTS (
   SELECT 1
-  FROM formas_pagamento fp
+  FROM test.formas_pagamento fp
   WHERE fp.nome = seed.nome
 );
 
-INSERT INTO parametros_sistema (chave, valor)
+INSERT INTO test.parametros_sistema (chave, valor)
 VALUES
   ('tempo_espera_minutos', '35'),
   ('pedido_ordem_atual', '0'),
@@ -241,3 +241,4 @@ ON DUPLICATE KEY UPDATE valor = VALUES(valor);
 -- Credenciais iniciais do admin:
 -- usuario: topbgadmin26
 -- senha: bg2k26s2.
+

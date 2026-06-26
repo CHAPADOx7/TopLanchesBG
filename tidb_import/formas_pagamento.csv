@@ -1,0 +1,6 @@
+nome,descricao,ativo,aceita_troco,valor_troco
+Dinheiro em especie,Pagamento em dinheiro,1,1,0.00
+Cartao de credito,Credito,1,0,0.00
+Cartao de debito,Debito,1,0,0.00
+PIX,Pagamento instantaneo,1,0,0.00
+Outras,Voucher e outros,1,0,0.00

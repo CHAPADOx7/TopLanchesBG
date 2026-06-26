@@ -1,0 +1,9 @@
+chave,valor
+tempo_espera_minutos,35
+pedido_ordem_atual,0
+kitchen_printer_enabled,false
+kitchen_printer_name,
+general_printer_enabled,false
+general_printer_name,
+site_theme,normal
+printer_auto_search,false
