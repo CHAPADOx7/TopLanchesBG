@@ -450,7 +450,7 @@ def admin_orders():
     pedidos = Pedido.query.filter(Pedido.status != 'Arquivado').order_by(Pedido.data.desc()).all()
     entregadores = Entregador.query.filter_by(ativo=True).order_by(Entregador.nome).all()
     produtos_principais = Produto.query.filter(
-        Produto.a"tivo == True,
+        Produto.ativo == True,
         ~func.lower(Produto.categoria).in_(['bebidas', 'bebida'])
     ).order_by(Produto.nome).all()
     combos_ativos = Combo.query.filter_by(ativo=True).order_by(Combo.nome).all()

@@ -5,3 +5,4 @@ python-dotenv==1.0.0
 Flask-SocketIO==5.6.1
 eventlet==0.33.3
 Werkzeug==3.0.0
+gunicorn==22.0.0
