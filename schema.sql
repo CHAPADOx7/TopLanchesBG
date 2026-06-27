@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS historico_alteracoes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO configuracoes (id, horario_abertura, horario_fechamento, whatsapp_empresa, taxa_fixa, entrega_ativa)
-VALUES (1, '17:00', '00:00', '552299568835', 5.00, 1)
+VALUES (1, '17:00', '00:00', '5522997444949', 5.00, 1)
 ON DUPLICATE KEY UPDATE
   horario_abertura = VALUES(horario_abertura),
   horario_fechamento = VALUES(horario_fechamento),

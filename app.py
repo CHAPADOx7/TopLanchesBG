@@ -39,7 +39,7 @@ def init_app():
         db.create_all()
         ensure_pedido_order_number_column()
         if not Configuracao.query.first():
-            db.session.add(Configuracao(horario_abertura='17:00', horario_fechamento='00:00', whatsapp_empresa='552299568835', taxa_fixa=5.00, entrega_ativa=True))
+            db.session.add(Configuracao(horario_abertura='17:00', horario_fechamento='00:00', whatsapp_empresa='5522997444949', taxa_fixa=5.00, entrega_ativa=True))
             db.session.commit()
         # Mantem apenas o admin oficial solicitado.
         admin_user = Usuario.query.filter_by(usuario=DEFAULT_ADMIN_USER).first()
