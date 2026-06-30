@@ -417,6 +417,36 @@ def cart():
     return render_template('cart.html')
 
 
+@app.route('/track-order', methods=['GET', 'POST'])
+def track_order():
+    """Permite rastrear pedidos sem estar logado, usando telefone"""
+    if request.method == 'GET':
+        return render_template('track_order.html')
+    
+    # POST: buscar pedidos por telefone
+    telefone = request.form.get('telefone', '').strip()
+    if not telefone:
+        flash('Digite um telefone para rastrear.', 'warning')
+        return redirect(url_for('track_order'))
+    
+    cliente = Cliente.query.filter_by(telefone=telefone).first()
+    if not cliente:
+        flash(f'Nenhum pedido encontrado para o telefone: {telefone}', 'info')
+        return redirect(url_for('track_order'))
+    
+    pedidos_ativos = Pedido.query.filter(
+        Pedido.cliente_id == cliente.id,
+        Pedido.status.in_(['Pendente', 'Aceito', 'Em Preparo', 'Saiu para Entrega'])
+    ).order_by(Pedido.data.desc()).all()
+    
+    historico = Pedido.query.filter(
+        Pedido.cliente_id == cliente.id,
+        ~Pedido.status.in_(['Pendente', 'Aceito', 'Em Preparo', 'Saiu para Entrega'])
+    ).order_by(Pedido.data.desc()).all()
+    
+    return render_template('track_order.html', cliente=cliente, pedidos_ativos=pedidos_ativos, historico=historico, telefone=telefone)
+
+
 @app.route('/admin/dashboard')
 @role_required(ROLE_ADMIN)
 def admin_dashboard():
@@ -560,10 +590,16 @@ def admin_manual_order():
     cliente = Cliente.query.filter_by(telefone=telefone).first()
     if not cliente:
         safe_phone = ''.join(ch for ch in telefone if ch.isdigit()) or str(int(datetime.utcnow().timestamp()))
-        guest_email = f"manual_{safe_phone}@toplanches.local"
-        email_exists = Cliente.query.filter_by(email=guest_email).first()
-        if email_exists:
-            guest_email = f"manual_{safe_phone}_{int(datetime.utcnow().timestamp())}@toplanches.local"
+        # Garante email unico com retry loop
+        guest_email = None
+        for attempt in range(100):
+            candidate_email = f"manual_{safe_phone}_{attempt}@toplanches.local" if attempt > 0 else f"manual_{safe_phone}@toplanches.local"
+            if not Cliente.query.filter_by(email=candidate_email).first():
+                guest_email = candidate_email
+                break
+        if not guest_email:
+            flash('Nao foi possivel gerar email unico para o cliente. Tente novamente.', 'danger')
+            return redirect(url_for('admin_orders'))
         cliente = Cliente(
             nome=nome,
             telefone=telefone,
@@ -1202,10 +1238,15 @@ def api_checkout():
         cliente = Cliente.query.filter_by(telefone=telefone).first()
         if not cliente:
             safe_phone = ''.join(ch for ch in telefone if ch.isdigit()) or str(int(datetime.utcnow().timestamp()))
-            guest_email = f"guest_{safe_phone}@toplanches.local"
-            email_exists = Cliente.query.filter_by(email=guest_email).first()
-            if email_exists:
-                guest_email = f"guest_{safe_phone}_{int(datetime.utcnow().timestamp())}@toplanches.local"
+            # Garante email unico com retry loop
+            guest_email = None
+            for attempt in range(100):
+                candidate_email = f"guest_{safe_phone}_{attempt}@toplanches.local" if attempt > 0 else f"guest_{safe_phone}@toplanches.local"
+                if not Cliente.query.filter_by(email=candidate_email).first():
+                    guest_email = candidate_email
+                    break
+            if not guest_email:
+                return jsonify({'error': 'Nao foi possivel gerar email unico para o cliente.'}), 500
             cliente = Cliente(
                 nome=nome,
                 telefone=telefone,

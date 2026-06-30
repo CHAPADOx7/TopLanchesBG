@@ -29,6 +29,7 @@
             <a href="{{ home_cardapio }}">Cardápio</a>
             <a href="{{ home_promocoes }}">Promoções</a>
             <a href="{{ home_contato }}">Contato</a>
+            <a href="{{ url_for('track_order') }}" class="nav-track-order">📍 Rastrear</a>
             {% if current_role == 'client' %}
                 <a href="{{ url_for('client_orders') }}">Meus Pedidos</a>
             {% elif current_role == 'delivery' %}
@@ -76,7 +77,7 @@
         <div>
             <h4>Contato</h4>
             <p>WhatsApp: (22) 99756-8835</p>
-            <p>Somente Delivery<br>Baixo Grande (SPA)</p>
+            <p>Somente Delivery
         </div>
         <div>
             <h4>Legal</h4>

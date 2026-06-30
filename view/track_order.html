@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Rastrear Pedidos - PitBull Lanches{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white text-center py-4">
+                    <h2 class="mb-0">📍 Rastrear Seus Pedidos</h2>
+                    <p class="mb-0 mt-2 small">Digite seu telefone para ver o status dos pedidos</p>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Formulário de Busca -->
+                    {% if not cliente %}
+                    <form method="POST" class="mb-4">
+                        <div class="input-group input-group-lg">
+                            <input type="tel" name="telefone" class="form-control" placeholder="(11) 99999-9999" 
+                                   value="{{ telefone or '' }}" required>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            Use o mesmo telefone que usou ao fazer o pedido
+                        </small>
+                    </form>
+                    {% else %}
+                    <!-- Voltar a Buscar -->
+                    <form method="POST" class="mb-4">
+                        <div class="input-group input-group-lg">
+                            <input type="tel" name="telefone" class="form-control" placeholder="(11) 99999-9999" 
+                                   value="{{ telefone or '' }}" required>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-search"></i> Buscar Outro
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Informações do Cliente -->
+                    <div class="alert alert-info mb-4">
+                        <strong>📱 Telefone:</strong> {{ cliente.telefone }}<br>
+                        <strong>👤 Nome:</strong> {{ cliente.nome }}
+                    </div>
+
+                    <!-- Pedidos Ativos -->
+                    {% if pedidos_ativos %}
+                    <h4 class="text-danger mb-3">
+                        <i class="fas fa-hourglass-start"></i> Pedidos em Andamento
+                    </h4>
+                    <div class="row gap-3 mb-4">
+                        {% for pedido in pedidos_ativos %}
+                        <div class="col-12">
+                            <div class="card border-left-danger">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h5 class="card-title mb-1">
+                                                Pedido #{{ pedido.numero_pedido or pedido.id }}
+                                            </h5>
+                                            <p class="text-muted small mb-2">
+                                                {{ pedido.data.strftime('%d/%m/%Y às %H:%M') }}
+                                            </p>
+                                            <div class="mb-2">
+                                                <strong>Status:</strong>
+                                                {% if pedido.status == 'Pendente' %}
+                                                <span class="badge bg-warning text-dark">⏳ {{ pedido.status }}</span>
+                                                {% elif pedido.status == 'Aceito' %}
+                                                <span class="badge bg-info">✓ {{ pedido.status }}</span>
+                                                {% elif pedido.status == 'Em Preparo' %}
+                                                <span class="badge bg-primary">👨‍🍳 {{ pedido.status }}</span>
+                                                {% elif pedido.status == 'Saiu para Entrega' %}
+                                                <span class="badge bg-success">🚚 {{ pedido.status }}</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-muted small">
+                                                <strong>Endereço:</strong> {{ pedido.endereco }}, {{ pedido.bairro }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <h6 class="text-danger mb-2">
+                                                R$ {{ "%.2f" % pedido.valor_total|float }}
+                                            </h6>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="collapse" data-bs-target="#pedido-{{ pedido.id }}">
+                                                Ver Itens
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Itens do Pedido -->
+                                    <div class="collapse mt-3" id="pedido-{{ pedido.id }}">
+                                        <div class="border-top pt-3">
+                                            <small>
+                                                {% for item in pedido.itens %}
+                                                <div class="mb-1">
+                                                    • {{ item.nome }} x{{ item.quantidade }} - R$ {{ "%.2f" % item.valor|float }}
+                                                </div>
+                                                {% endfor %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Histórico de Pedidos -->
+                    {% if historico %}
+                    <h4 class="text-secondary mb-3">
+                        <i class="fas fa-history"></i> Histórico de Pedidos
+                    </h4>
+                    <div class="row gap-2">
+                        {% for pedido in historico %}
+                        <div class="col-12">
+                            <div class="card bg-light border">
+                                <div class="card-body py-2">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="card-title mb-0">
+                                                Pedido #{{ pedido.numero_pedido or pedido.id }}
+                                            </h6>
+                                            <small class="text-muted">
+                                                {{ pedido.data.strftime('%d/%m/%Y às %H:%M') }} -
+                                                {% if pedido.status == 'Entregue' %}
+                                                <span class="badge bg-success">✓ Entregue</span>
+                                                {% elif pedido.status == 'Cancelado' %}
+                                                <span class="badge bg-danger">✗ Cancelado</span>
+                                                {% elif pedido.status == 'Recusado' %}
+                                                <span class="badge bg-danger">✗ Recusado</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">{{ pedido.status }}</span>
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <small class="text-muted">
+                                                R$ {{ "%.2f" % pedido.valor_total|float }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Sem Pedidos -->
+                    {% if cliente and not pedidos_ativos and not historico %}
+                    <div class="alert alert-info text-center py-5">
+                        <h5>Nenhum pedido encontrado</h5>
+                        <p class="text-muted mb-0">Você ainda não tem pedidos registrados.</p>
+                    </div>
+                    {% endif %}
+
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ajuda -->
+            <div class="alert alert-light border mt-4">
+                <h6 class="text-danger mb-2">❓ Como funciona?</h6>
+                <ul class="small mb-0">
+                    <li>Digite o telefone que usou ao fazer o pedido</li>
+                    <li>Veja todos os seus pedidos em tempo real</li>
+                    <li>Acompanhe o status e localização da entrega</li>
+                    <li>Não precisa estar logado para rastrear</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-danger {
+        border-left: 4px solid #dc3545 !important;
+    }
+    .card {
+        border-radius: 8px;
+    }
+    .card-header {
+        border-radius: 8px 8px 0 0;
+    }
+</style>
+{% endblock %}
