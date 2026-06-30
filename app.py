@@ -65,9 +65,16 @@ def init_app():
         for usuario in outros_usuarios:
             db.session.delete(usuario)
 
-        # Remove usuarios de teste de entrega/entregador para manter apenas acesso admin.
-        for entregador in Entregador.query.all():
-            db.session.delete(entregador)
+        # Usa no_autoflush para evitar constraint de chave estrangeira durante init
+        with db.session.no_autoflush:
+            # Apenas limpa entregadores que NAO tem pedidos associados
+            entregadores_com_pedidos = db.session.query(Pedido.entregador_id).filter(Pedido.entregador_id != None).distinct().all()
+            ids_com_pedidos = {ep[0] for ep in entregadores_com_pedidos}
+            
+            for entregador in Entregador.query.all():
+                if entregador.id not in ids_com_pedidos:
+                    db.session.delete(entregador)
+        
         defaults = [
             ('Dinheiro em especie', 'Pagamento em dinheiro', True),
             ('Cartao de credito', 'Credito', False),
